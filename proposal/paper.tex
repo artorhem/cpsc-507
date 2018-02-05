@@ -7,7 +7,7 @@
 \usepackage[autostyle]{csquotes}
 \usepackage{hyperref}
 \usepackage{url}
-\usepackage{cleveref}         % add context-specific names before reference, e.g., Figure or 
+\usepackage{cleveref}         % add context-specific names before reference, e.g., Figure or
 \usepackage{listings}         % illustration of source code snippets
 \usepackage{microtype}        % improved text alignment, letter arrangement etc.
 \usepackage{xspace}           % spacing
@@ -24,14 +24,14 @@
 
 \begin{document}
 
-\title{Project Proposal: Detection and Mitigation of Dependencies with Security Risks}
+\title{Detection and Mitigation of Dependencies with Security Risks}
 
 
 \author{Gleb Naumenko}
 \affiliation{%
   \institution{University of British Columbia}
-  \city{Vancouver} 
-  \state{Canada} 
+  %\city{Vancouver}
+  %\state{Canada}
 }
 \email{naumenko@cs.ubc.ca}
 
@@ -39,8 +39,8 @@
 \author{Puneet Mehrotra}
 \affiliation{%
   \institution{University of British Columbia}
-  \city{Vancouver} 
-  \state{Canada} 
+  %\city{Vancouver}
+  %\state{Canada}
 }
 \email{puneet89@cs.ubc.ca}
 
@@ -48,8 +48,8 @@
 \author{Anna Scholtz}
 \affiliation{%
   \institution{University of British Columbia}
-  \city{Vancouver} 
-  \state{Canada} 
+  %\city{Vancouver}
+  %\state{Canada}
 }
 \email{ascholtz@cs.ubc.ca}
 
@@ -58,9 +58,9 @@
 
 
 
-\begin{abstract}
-Many code bases rely on outdated dependencies that might pose security risks. We propose to develop a tool that can automatically detect dependencies with security risks, runs a build with updated dependencies, and informs the developer about potential upgrade errors. We plan to use the tool to analyze a range of Github projects in order to answer several research questions. We also aim to do a user study on the usability and usefulness of the proposed solution.
-\end{abstract}
+% \begin{abstract}
+% Many code bases rely on outdated dependencies that might pose security risks. We propose to develop a tool that can automatically detect dependencies with security risks, runs a build with updated dependencies, and informs the developer about potential upgrade errors. We plan to use the tool to analyze a range of Github projects in order to answer several research questions. We also aim to do a user study on the usability and usefulness of the proposed solution.
+% \end{abstract}
 
 
 
@@ -68,37 +68,55 @@ Many code bases rely on outdated dependencies that might pose security risks. We
 
 \section{Introduction}
 
-Code often relies on outdated dependencies or uses deprecated methods that might pose critical security issues. As is often the case, these projects might have only a limited number of resources working on them -- for example in a low priority legacy product -- or might have no active developers, but a strong user-base, as is the case in many open source projects. In these situations it is important to update these dependencies and rewrite insecure code, however doing so can introduce bugs in the application. Resolving these errors requires some development effort. 
-
-It can be useful to have a tool that automatically identifies these dependencies and potential upgrade errors, thereby assisting in proactively making decisions about the upgrade plan.
+Code often relies on outdated dependencies or uses deprecated methods that might pose critical security issues~\cite{kula2017developers}. The most common security vulnerabilities include: weak encryption, algorithms like TripleDES~\cite{CA5350}, weak hash functions, for example SHA-1~\cite{CA5350}, or weak key length like RSA-768~\cite{kleinjung2010factorization}.
+As is often the case, these projects might have only a limited number of resources working on them -- for example in a low priority legacy product -- or might have no active developers, but a strong user-base, as is the case in many open source projects. Developers lose awareness of the libraries they use if they do not work on a project for too long. Also, most developers are not aware of the security vulnerabilities in the libraries they use~\cite{kula2017developers}. It is tedious to look for updates, and one must remember to do so in the first place. In the absence of active monitoring of the project, its dependencies can stay undetected and outdated for long periods of time, increasing the risk of an attack. These problems can be alleviated with tools that notify the developers of the outdated dependencies in their code, suggest alternative safe methods, and look for updates and help with the application of fixes.
 
 \section{Goals}
 
 The goal of our project is to build a tool that:
 \begin{itemize}
-\item Detects dependencies which have issues with security or performance
-\item Identifies locations where unsafe methods with known vulnerabilities are used in the code and suggests safe alternatives 
-\item Helps developers to update dependencies in their projects. This includes propositions of updates and checking if updating breaks the code
+\item Detects outdated dependencies
+\item Statically identifies locations where deprecated or unsafe methods are used in the code and suggests safe alternatives
+\item Dynamically updates dependencies in projects and then runs tests to check whether the code is broken and needs attention
 \end{itemize}
 
 
-As a prototype, the tool will be able to detect risks in Python projects but can be designed to support more programming languages in the future. We plan to implement it as a command-line tool as well as an IDE plugin. 
+The prototype will be able to detect risks in Python projects but will be designed in an extensible way to support more programming languages in the future. We plan to implement it as a command-line tool and as a plugin for the Sublime editor. The command-line tool will be able to analyze local projects as well as Github projects by providing a URL to the project code.
 
-For detection the tool will rely on a database that contains entries for known problematic dependencies and a description of their associated risks. The tool will extract all dependencies from the provided source code, match them against the database and generate a report for the developer. In addition, it also offers to update the dependencies if fixed versions are available. The update will run on a clone of the source code and also generate a report which will contain whether the update was successful or provide information about what kind of errors occurred. 
+For detection, the tool will rely on pip which is a package management system for installing and managing Python software packages [5]. Additionally, it will check the code against a database containing methods with known weaknesses, such as methods that use hash collision weaknesses like MD5 [4]. The IDE plugin allows highlighting those issues directly in the Sublime editor.
+The tool will extract all dependencies from the provided source code, checks whether new versions have been released, and provides a summary to the developer. In addition, it also offers to update the dependencies if newer versions are available. The update will run on a clone of the source code, and then any available tests will be executed. After the build and tests have run, a report will be generated which will contain whether the update was successful and the coverage achieved by the tests that were run. In case the build fails, the report provides information about what kind of errors occurred. The report will also hint to the developer where methods with known weaknesses are used in the code and will suggest safer alternatives. The tool shall generate a report as plain text or as an HTML file. The tool will also allow creating pull-requests for successfully updated projects, with the generated report in their description.
 
 
 \section{Research Questions}
 
 Using the developed tool we want to analyze different projects on Github and address the following research questions:
-\begin{itemize}
-\item How many popular projects have dependencies that pose security risks?
-\item What are the most common risks?
-\item How easily can these projects be updated to eliminate the risks?
-\end{itemize}
+
+\begin{enumerate}
+\item How many projects have dependencies with security risks?
+\item What are good strategies to update outdated dependencies?
+\item To what extent can static or dynamic verification be used to check if the code still runs after an update?
+%\item How many of the suggested changes were the developers willing to implement?
+\end{enumerate}
+
+For the upgrading process, we will evaluate different strategies, such as updating all dependencies at once, updating dependencies one after the other. We will also examine what strategies to use when an upgrade fails.
 
 \section{Evaluation}
 
-To evaluate the tool we plan to select trending Github repositories, analyze them and answer the research questions. We also plan to run a small user study in which we ask participants to use the tool and participate in an interview. The interview will focus on the usefulness and usability of the developed tool.
 
+To evaluate the tool we plan to select trending Github repositories with unit tests, analyze them for their use of libraries. By this, we hope to glean information that helps us to answer (1). In the next step, we will randomly select projects to update and use different update strategies to resolve their outdated dependencies. We hope to identify an optimal strategy based on the ease of upgrade and success of the build process while accounting for the number of dependencies to answer (2). In the next step, we will update outdated dependencies of the selected repositories, issue pull-requests to the developers and examine the acceptance rate. We also plan to run a small user study in which we ask participants to use the tool and participate in an interview. The interview will focus on the usefulness and usability of the developed tool.
+
+\section{Related Work}
+
+Requires.io~\cite{requires} sends notifications if a Python dependency is expired. It monitors git repositories, however, a free plan is only available for public repositories. It also does not provide the possibility to update outdated dependencies automatically.
+
+Greenkeeper.io~\cite{greenkeeper} updates npm dependencies of Github JavaScript projects in real-time and runs unit tests.
+
+Our developed tool will offer a command-line tool as well as an IDE integration to analyze locally stored Python projects as well as repositories on Github. Dependencies will get updated and the developer will see whether the updated code is broken by running all unit tests. In addition to dynamically checking whether the code breaks our tool will also employ static analysis to check where unsafe or deprecated methods are used.
+
+
+
+
+\bibliographystyle{abbrv}
+\bibliography{paper}
 
 \end{document}
