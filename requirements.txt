@@ -1,2 +1,4 @@
 snakefood==1.4
 click==6.7
+pygithub
+pip

@@ -14,5 +14,7 @@ def main(url, path):
 
     print vulnerability_analysis.get_dependencies(path)
 
+    print vulnerability_analysis.get_latest()
+
 if __name__ == '__main__':
     main()
