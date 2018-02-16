@@ -31,7 +31,12 @@ def main(url, path):
             print "Found"
         print function
 
-    # print vulnerability_analysis.get_latest()
+    # # print vulnerability_analysis.get_latest()
+    # dependencies = vulnerability_analysis.get_dependencies(local_repo_path)
+
+    # for dependency in dependencies:
+    #     print dependency
+    #     print vulnerability_analysis.get_functions(dependency)
 
     # todo: delete downloaded repo
 

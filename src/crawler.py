@@ -16,7 +16,6 @@ def download_repository(git_url, target):
     :param target: local path where the repository should be downloaded to
     :return: tuple to access the locally stored repo as well as to access the remote repo
     """
-
     # download repo and make available locally
     local_repo = Repo.clone_from(git_url, target)
 
@@ -68,8 +67,8 @@ def get_repository_metrics(remote_repo):
     age = remote_repo.created_at
     total_forks = remote_repo.forks_count
     total_stars = remote_repo.stargazers_count
-
-
+    last_commit = list(remote_repo.get_commits())[0].committer.created_at
+    
     logger.info(remote_repo.git_url, extra={
         'total_commits': total_commits,
         'total_tags': total_tags,
