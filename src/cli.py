@@ -1,12 +1,13 @@
 import click
 import vulnerability_analysis
+import vulnerabilities
 import crawler
 import uuid
 
 
 # todo: list of URLs to be analyzed
 @click.command()
-@click.option('--url', help='URL to a github repository')    
+@click.option('--url', help='URL to a github repository')
 @click.option('--path', help='Path to a local project directory')
 def main(url, path):
     # analyze source code of provided project
@@ -21,9 +22,16 @@ def main(url, path):
         local_repo_path = path
 
 
-    print vulnerability_analysis.get_dependencies(local_repo_path)
+    dependencies = vulnerability_analysis.get_dependencies(local_repo_path)
 
-    print vulnerability_analysis.get_latest()
+    vulnerable_functions = vulnerabilities.get_vulnerable_functions()
+
+    for function, properties in vulnerable_functions.items():
+        if function in dependencies:
+            print "Found"
+        print function
+
+    # print vulnerability_analysis.get_latest()
 
     # todo: delete downloaded repo
 

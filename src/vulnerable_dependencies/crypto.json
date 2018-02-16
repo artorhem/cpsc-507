@@ -1,0 +1,56 @@
+{
+    "hashlib.md5()":
+    {
+      "safe": 0,
+      "type": "hash",
+      "update_with": "hashlib.sha512()",
+      "reason": ""
+    },
+    "hashlib.sha1()":
+    {
+      "safe": 0,
+      "type": "hash",
+      "update_with": "hashlib.sha512()",
+      "reason": ""
+    },
+    "Crypto.Hash.MD5":
+    {
+      "safe": 0,
+      "type": "hash",
+      "update_with": "Crypto.Hash.SHA512",
+      "reason": ""
+    },
+    "Crypto.Hash.SHA":
+    {
+      "safe": 0,
+      "type": "hash",
+      "update_with": "Crypto.Hash.SHA512",
+      "reason": ""
+    },
+    "cryptography.hazmat.primitives.hashes.MD5":
+    {
+      "safe": 0,
+      "type": "hash",
+      "update_with": "cryptography.hazmat.primitives.hashes.SHA512",
+      "reason": ""
+    },
+    "cryptography.hazmat.primitives.hashes.SHA512":
+    {
+      "safe": 0,
+      "type": "hash",
+      "update_with": "cryptography.hazmat.primitives.hashes.SHA512",
+      "reason": ""
+    },
+    "Crypto.Cipher.Blowfish": {
+      "safe": 0,
+      "type": "encryption",
+      "update_with": "Crypto.Cipher.AES",
+      "reason": ""
+    },
+    "Crypto.Cipher.ARC4":{
+      "safe": 0,
+      "type": "encryption",
+      "update_with": "Crypto.Cipher.AES",
+      "reason": ""
+    }
+}
