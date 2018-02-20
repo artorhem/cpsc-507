@@ -20,16 +20,20 @@ def main(url, path):
         crawler.get_repository_metrics(remote_repo)
     elif path:
         local_repo_path = path
+        
 
+    print vulnerability_analysis.vulnerability_analysis_in_path(local_repo_path)
 
-    dependencies = vulnerability_analysis.get_dependencies(local_repo_path)
+    # dependencies = vulnerability_analysis.get_dependencies(local_repo_path)
 
-    vulnerable_functions = vulnerabilities.get_vulnerable_functions()
+    # vulnerable_functions = vulnerabilities.get_vulnerable_functions()
 
-    for function, properties in vulnerable_functions.items():
-        if function in dependencies:
-            print "Found"
-        print function
+    # print vulnerable_functions
+
+    # for function, properties in vulnerable_functions.items():
+    #     if function in dependencies:
+    #         print "Found"
+    #     print function
 
     # # print vulnerability_analysis.get_latest()
     # dependencies = vulnerability_analysis.get_dependencies(local_repo_path)
