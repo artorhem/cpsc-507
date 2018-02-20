@@ -4,3 +4,6 @@ pygithub
 pip
 gitpython
 python-json-logger
+tox
+ConfigParser
+pytest
