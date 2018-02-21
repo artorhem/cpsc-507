@@ -9,7 +9,8 @@ import uuid
 @click.command()
 @click.option('--url', help='URL to a github repository')
 @click.option('--path', help='Path to a local project directory')
-def main(url, path):
+@click.option('--replace', is_flag=True, default=False, help='Automatically replace vulnerabilities')
+def main(url, path, replace):
     # analyze source code of provided project
     print "Start analysis"
 
@@ -21,26 +22,14 @@ def main(url, path):
     elif path:
         local_repo_path = path
         
+    detected_vulnerabilities = vulnerability_analysis.vulnerability_analysis_in_path(local_repo_path)
+    print detected_vulnerabilities
 
-    print vulnerability_analysis.vulnerability_analysis_in_path(local_repo_path)
+    if replace:
+        print "Replace detected vulnerabilities"
+        vulnerability_analysis.replace_vulnerabilities(detected_vulnerabilities)
 
-    # dependencies = vulnerability_analysis.get_dependencies(local_repo_path)
 
-    # vulnerable_functions = vulnerabilities.get_vulnerable_functions()
-
-    # print vulnerable_functions
-
-    # for function, properties in vulnerable_functions.items():
-    #     if function in dependencies:
-    #         print "Found"
-    #     print function
-
-    # # print vulnerability_analysis.get_latest()
-    # dependencies = vulnerability_analysis.get_dependencies(local_repo_path)
-
-    # for dependency in dependencies:
-    #     print dependency
-    #     print vulnerability_analysis.get_functions(dependency)
 
     # todo: delete downloaded repo
 
