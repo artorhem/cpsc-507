@@ -3,6 +3,7 @@ import vulnerability_analysis
 import vulnerabilities
 import crawler
 import uuid
+from report import Report
 
 
 # todo: list of URLs to be analyzed
@@ -23,11 +24,13 @@ def main(url, path, replace):
         local_repo_path = path
         
     detected_vulnerabilities = vulnerability_analysis.vulnerability_analysis_in_path(local_repo_path)
-    print detected_vulnerabilities
 
     if replace:
         print "Replace detected vulnerabilities"
         vulnerability_analysis.replace_vulnerabilities(detected_vulnerabilities)
+
+    report = Report(detected_vulnerabilities, None, None, replace)
+    print report.plain_text_report()
 
 
 
