@@ -11,7 +11,8 @@ from report import Report
 @click.option('--url', help='URL to a github repository')
 @click.option('--path', help='Path to a local project directory')
 @click.option('--replace', is_flag=True, default=False, help='Automatically replace vulnerabilities')
-def main(url, path, replace):
+@click.option('--html', help='Create html report in provided file')
+def main(url, path, replace, html):
     # analyze source code of provided project
     print "Start analysis"
 
@@ -32,7 +33,8 @@ def main(url, path, replace):
     report = Report(detected_vulnerabilities, None, None, replace)
     print report.plain_text_report()
 
-
+    if html:
+        report.html_report(html)
 
     # todo: delete downloaded repo
 
