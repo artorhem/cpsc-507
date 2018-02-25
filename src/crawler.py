@@ -68,7 +68,7 @@ def get_repository_metrics(remote_repo):
     total_forks = remote_repo.forks_count
     total_stars = remote_repo.stargazers_count
     last_commit = list(remote_repo.get_commits())[0].committer.created_at
-    
+
     logger.info(remote_repo.git_url, extra={
         'total_commits': total_commits,
         'total_tags': total_tags,
