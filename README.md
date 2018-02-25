@@ -26,3 +26,10 @@ To access the github repository the API access token needs to be set (see Config
 ## Collected Data
 
 For analyzed github repositories metrics will be collected in `/tmp` in `metrics.json`.
+
+## Supported Testing Frameworks
+The space of Python testing is very fragmented, and there is not universal method of writing testcases. To make the process simple and extensible, we use the tox test framework, that simplifies the execution of the tests. We look at the standard locations to discover tests, and support the standard testing mechanisms. Here are our assumptions:
+
++ The tests are placed in the ${project}/test[s] directory
++ The requirements necessary are present in a requirements.txt file. Often developers specify multiple versions of this file. 	We look for all files in the repository that have a name starting with 'requirements' to include for installation in the virtualenv.
++ The supported methods of testing the project are: setup.py with a test recipe, py.tests, nosetests, and plain old unittests.
