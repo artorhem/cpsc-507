@@ -29,14 +29,14 @@ class TestInfo:
         :param path to the repository under analysis
         """
         self.path = path
-        self.testDir = None
+        self.testDir = self.find_testdir(self.path)
         self.requirementFiles = self.find_requirements_file(self.path) #Array of all files that match the requirements[-\w] regex
         self.testRunner = None #Hash -> <TestRunner,TestDir>
         self.toxPath = None #path to the original tox file, or the created tox file
         self.cfgPath = None #path to the setup.cfg file, None if absent
         self.supportedPythons = None #Array
 
-    def find_requirements_file(path):
+    def find_requirements_file(self, path):
         reqfiles = []
         for dirpath,dirs,files in os.walk(path):
             for file in files:
@@ -45,22 +45,27 @@ class TestInfo:
         return(reqfiles)
 
 
-    def find_testdir(path):
+    def find_testdir(self,path):
+
+        testdirInfo = {}
+        testdirInfo['basepath'] = path
         for dirpath,dirs,files in os.walk(path):
             for directory in dirs:
                 if(re.match('^test[s]$',directory)):
-                    return (os.path.join(dirpath,directory))
+                    testdirInfo['walkthrough'] = directory
 
         '''
         
         Now we look at the information in the setup.py file to corroborate
          if a test directory exists there. If it does, then we can use
          `python setup.py test` to run the tests. 
-    
         '''
+    
         import setuptools
         os.chdir(path)
         with mock.patch.object(setuptools, 'setup') as mock_setup:
             import setup
         args, kwargs = mock_setup.call_args
-        print kwargs.get('test_suite', [])
+        testdirInfo['setuptools'] = kwargs.get('test_suite', [])
+
+        return testdirInfo
