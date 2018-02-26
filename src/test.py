@@ -11,8 +11,7 @@
 
     3. Store the log of the test run in a consistent format that is
     consistent despite the choice of testing framework.
-    TODO:Make the list of projects that we aim to test the tool against and the testsuites they employ
-    TODO: Will we test against multiple python versions? <- @Anna, @Gleb?
+    TODO: check if the project has a travis.yml file. That information is usable by tox.
 """
 import ConfigParser
 import pytest
