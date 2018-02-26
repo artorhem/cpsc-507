@@ -76,6 +76,7 @@ def get_repository_metrics(remote_repo):
     # last_commit = list(remote_repo.get_commits())[0].committer.created_at
     last_commit = None
 
+
     logger.info(remote_repo.git_url, extra={
         'total_commits': total_commits,
         'total_tags': total_tags,
