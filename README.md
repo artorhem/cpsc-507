@@ -1,8 +1,5 @@
-[todo]
+# BugRevelio
 
-__@PuneetM__: Make the list of projects that we aim to test the tool against and the testsuites they employ
-
-__@Anna, @Gleb__: Will we test against multiple python versions?
 
 ## Installation
 
@@ -29,6 +26,22 @@ To access the github repository the API access token needs to be set (see Config
 ## Collected Data
 
 For analyzed github repositories metrics will be collected in `/tmp` in `metrics.json`.
+
+
+## Docker
+
+To build the container:
+
+`docker build -t 507 .`
+
+To run the container:
+
+`docker run --name 507 -v /tmp/dock:/tmp -e GITHUB_ACCESS_TOKEN="token" 507 & `
+
+To remove the container:
+
+`docker rm 507  `
+
 
 ## Supported Testing Frameworks
 The space of Python testing is very fragmented, and there is not universal method of writing testcases. To make the process simple and extensible, we use the tox test framework, that simplifies the execution of the tests. We look at the standard locations to discover tests, and support the standard testing mechanisms. Here are our assumptions:

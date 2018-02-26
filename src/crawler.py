@@ -3,10 +3,11 @@ import os
 from git import Repo
 import logging
 from pythonjsonlogger import jsonlogger
+import github3
 
 # get token that allows accessing the github API
 # the token must be set as environment variable
-g = Github(os.environ['GITHUB_ACCESS_TOKEN'])
+g = Github(os.environ['GITHUB_USER'], os.environ['GITHUB_PASSWORD'])
 
 
 def download_repository(git_url, target):
@@ -16,9 +17,6 @@ def download_repository(git_url, target):
     :param target: local path where the repository should be downloaded to
     :return: tuple to access the locally stored repo as well as to access the remote repo
     """
-    # download repo and make available locally
-    local_repo = Repo.clone_from(git_url, target)
-
     # get access handle to remote repository
     remote_github_user = g.get_user(git_url.split('/')[-2])
     remote_repo = None
@@ -29,7 +27,13 @@ def download_repository(git_url, target):
             remote_repo = repo
             break
 
-    return (local_repo, remote_repo)
+    # create a fork
+    fork = g.get_user().create_fork(remote_repo)
+
+    # download repo and make available locally
+    local_repo = Repo.clone_from(fork.git_url, target)
+
+    return (local_repo, fork, remote_repo)
 
 
 def get_repository_metrics(remote_repo):
@@ -67,7 +71,11 @@ def get_repository_metrics(remote_repo):
     age = remote_repo.created_at
     total_forks = remote_repo.forks_count
     total_stars = remote_repo.stargazers_count
-    last_commit = list(remote_repo.get_commits())[0].committer.created_at
+
+    # todo
+    # last_commit = list(remote_repo.get_commits())[0].committer.created_at
+    last_commit = None
+
 
     logger.info(remote_repo.git_url, extra={
         'total_commits': total_commits,
@@ -82,3 +90,41 @@ def get_repository_metrics(remote_repo):
         'total_stars': total_stars
     })
 
+
+def push_updates(remote_repo, local_repo, email, name, title, body, head, base):
+    """
+    Commits and pushes changes to fork and created pull request.
+    :param remote_repo: original repo on Github
+    :param local_repo: locally stored repo with changes
+    :param email: email of committer
+    :param name: name of committer
+    :param title: title of the pull request
+    :param body: content/description of the pull request
+    :param head: location of the branch to be merged <username:branch>
+    :param base: branch changes are to be merged into
+    """
+    # set the appropriate remote location
+    remote = local_repo.create_remote('orig', url='https://' + 
+                                                   os.environ['GITHUB_USER'] + ':' + 
+                                                   os.environ['GITHUB_PASSWORD'] + 
+                                                   '@github.com/' + 
+                                                   os.environ['GITHUB_USER'] + 
+                                                   '/' + remote_repo.name + '.git')
+
+    # configure email address and user name
+    cw = local_repo.config_writer()
+    cw.set_value("user", "email", email)
+    cw.set_value("user", "name", name)
+
+    # commit changes
+    local_repo.git.add(u=True)
+    local_repo.index.commit('Replaced vulnerable functions and outdated dependencies')
+
+    # push to remote
+    remote.push(refspec='master')
+
+    # bug in GitPython which prevents using create_pull
+    # create pull request
+    gh = github3.login(os.environ['GITHUB_USER'], password=os.environ['GITHUB_PASSWORD'])
+    repo = gh.repository(remote_repo.owner.login, remote_repo.name)
+    repo.create_pull(title=title, base=base, head=head, body=body)
