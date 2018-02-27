@@ -44,7 +44,12 @@ def main(url, path, replace, push, html):
 
     vulnerable_functions = vulnerability_analyzer.detected_vulnerable_functions
     # todo: add to report and update
-    vulnerable_dependencies = vulnerability_analyzer.detected_vulnerable_imports
+    vulnerable_imports = vulnerability_analyzer.detected_vulnerable_imports
+    # todo: add to report and update
+    vulnerable_installed_dependencies = vulnerability_analyzer.detected_vulnerable_installed_dependencies
+    # todo: add to report and update
+    outdated_dependencies = vulnerability_analyzer.outdated_dependencies
+
 
     if replace:
         # automatically replace detected vulnerabilities if available
