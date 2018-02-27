@@ -28,6 +28,7 @@ def main(url, path, replace, push, html):
         local_repo_path = path
         
     detected_vulnerabilities = vulnerability_analysis.vulnerability_analysis_in_path(local_repo_path)
+    vulnerable_dependencies = vulnerability_analysis.vulnerable_dependencies_in_path(local_repo_path)
 
     if replace:
         print "Replace detected vulnerabilities"
