@@ -102,7 +102,9 @@ class Report:
         """
         report = '''We found potential vulnerability risks in your dependencies and used functions.
                     Some vulnerabilities have been replaced by safe alternatives.'''
-        report += '# Vulnerable Functions \n'
+
+        if len(self.detected_vulnerable_functions) > 0:
+            report += '# Vulnerable Functions \n'
 
         vulnerable_functions_print = ''
 
@@ -118,11 +120,30 @@ class Report:
 
         report += vulnerable_functions_print
 
-        report += '# Vulnerable Dependencies \n'
-        report += '[todo]'
+        if len(self.detected_vulnerable_imports) > 0:
+            report += '# Vulnerable Dependencies'
+            report += 'Some versions of dependencies used in the project might pose security threads. '
+            report += 'Please make sure to inform users to use safe versions. \n'
+            report += '| Dependency  | Vulnerable Versions | Reason | \n'
+            report += '| ------------| ------------------- | ------ | \n'
+
+        vulnerable_imports_print = ''
+
+        for imp in self.detected_vulnerable_imports:
+            vulnerability_entry = ''
+            for imp_info in imp:
+                vulnerability_entry += '|' + imp.name + '|' + imp_info.v + '|' + imp_info.advisory + '|'
+
+            vulnerable_imports_print += vulnerability_entry + '\n\n'
+
+        report += vulnerable_imports_print
 
         report += '# Test Report \n'
-        report += '[todo]'
+
+        if len(self.tests) > 0:
+            report += '[todo]'
+        else:
+            report += 'No tests detected.'
 
         report += '''--- \n
         This tool was developed as part of a Software Engineering course. 
