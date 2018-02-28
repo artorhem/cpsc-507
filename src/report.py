@@ -3,7 +3,10 @@ from colorama import init, Fore, Back, Style
 
 
 class Report:
-    def __init__(self, detected_vulnerabilities, tests, updates, replace):
+    def __init__(self,
+                 detected_vulnerable_functions,
+                 detected_vulnerable_imports,
+                 tests, updates, replace):
         """
         Creates a new report instance.
         :param detected_vulnerabilities: vulnerabilities that have been detected in the analysis
@@ -12,7 +15,8 @@ class Report:
         :param replace: whether automatic replacement is activated
         """
         init()  # initialize coloring
-        self.vulnerabilities = detected_vulnerabilities
+        self.detected_vulnerable_functions = detected_vulnerable_functions
+        self.detected_vulnerable_imports = detected_vulnerable_imports
         self.tests = tests
         self.updates = updates
         self.replace = replace
@@ -29,7 +33,7 @@ class Report:
         # todo: style file
 
         with tag('div', id='vulnerabilities'):
-            for vulnerability in self.vulnerabilities:
+            for vulnerability in self.detected_vulnerable_functions:
                 with tag('div', klass='entry'):
                     with tag('div', klass='file_path'):
                         text(vulnerability.file)
@@ -67,7 +71,7 @@ class Report:
         tests_print = 'todo'  # todo
         updates_print = 'todo'  # todo
 
-        for vulnerability in self.vulnerabilities:
+        for vulnerability in self.detected_vulnerable_functions:
             vulnerability_entry = vulnerability.file + ':' + str(vulnerability.line) + ':' + str(
                 vulnerability.column) + '\n'
             # todo get source context
@@ -92,4 +96,38 @@ class Report:
         return report
 
     def pull_request_report(self):
-        pass
+        """
+        Create a report used for pull-requests.
+        :return: Markdown report
+        """
+        report = '''We found potential vulnerability risks in your dependencies and used functions.
+                    Some vulnerabilities have been replaced by safe alternatives.'''
+        report += '# Vulnerable Functions \n'
+
+        vulnerable_functions_print = ''
+
+        for vulnerability in self.detected_vulnerable_functions:
+            vulnerability_entry = '*' + vulnerability.file + ':' + str(vulnerability.line) + ':' + str(
+                vulnerability.column) + ':* '
+
+            vulnerability_entry += vulnerability.name + '\n'
+            vulnerability_entry += '* Reason: ' + vulnerability.reason + '\n'
+            vulnerability_entry += '* Replacement: ' + vulnerability.update + '\n'
+
+            vulnerable_functions_print += vulnerability_entry + '\n\n'
+
+        report += vulnerable_functions_print
+
+        report += '# Vulnerable Dependencies \n'
+        report += '[todo]'
+
+        report += '# Test Report \n'
+        report += '[todo]'
+
+        report += '''--- \n
+        This tool was developed as part of a Software Engineering course. 
+        If you have feedback then please reply to this pull-request. Thank you!
+        '''
+
+        return report
+

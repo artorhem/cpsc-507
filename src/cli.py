@@ -61,14 +61,14 @@ def main(url, path, replace, push, html):
     report = Report(vulnerable_functions, None, None, replace)
 
     # automatically create pull request
-    if push:
+    if push and (len(vulnerable_functions) > 0 or len(vulnerable_imports) > 0):
         print "Create pull-request"
 
         # todo: include report in pull-request
         gh_handler.push_updates("bugrevelio@byom.de",
                                 "bugrevelio",
-                                "Vulnerability check",
-                                report.plain_text_report(),
+                                "Vulnerabilities",
+                                report.pull_request_report(),
                                 "bugrevelio:master",
                                 "master")
 
