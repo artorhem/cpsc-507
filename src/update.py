@@ -7,6 +7,8 @@ class Updater:
         :param path: path to project to be updated locally
         """
         self.path = path
+        self.outdated_dependencies = None
+        self.__detect_outdated_dependencies()
 
     def update_all(self):
         """
@@ -23,6 +25,14 @@ class Updater:
         if version is `None` then the latest version will be used
         """
         # todo
+        pass
+
+    def __detect_outdated_dependencies(self):
+        """
+        Checks the dependencies in the path and detects
+        the ones that are outdated.
+        """
+        # self.outdated_dependencies = todo
         pass
 
     # todo: we need to think about a update strategy
