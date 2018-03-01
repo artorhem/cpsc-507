@@ -58,7 +58,7 @@ def main(url, path, replace, push, html):
         print "Replace detected vulnerabilities"
         vulnerability_analyzer.replace_vulnerabilities()
 
-    report = Report(vulnerable_functions, None, None, replace)
+    report = Report(vulnerable_functions, vulnerable_imports, [], [], replace)
 
     # automatically create pull request
     if push and (len(vulnerable_functions) > 0 or len(vulnerable_imports) > 0):

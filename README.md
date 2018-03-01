@@ -10,7 +10,7 @@
 
 ## Configuration
 
-In order for the tool to access the Github API an API access token needs to be set as environment variable: `export GITHUB_ACCESS_TOKEN=<token>`.
+In order for the tool to access the Github API the Github username and password need to be set as environment variables: `export GITHUB_USER=<user>` and `export GITHUB_PASSWORD=<password>`.
 
 ## Usage
 

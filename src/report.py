@@ -89,7 +89,7 @@ class Report:
 
             vulnerable_functions_print += vulnerability_entry + '\n\n'
 
-        report = 'Detected vulerable functions: \n' + vulnerable_functions_print
+        report = 'Detected vulnerable functions: \n' + vulnerable_functions_print
         report += 'Executed Tests: \n' + tests_print  # todo
         report += 'Updated dependencies: \n' + updates_print  # todo
 
@@ -101,7 +101,7 @@ class Report:
         :return: Markdown report
         """
         report = '''We found potential vulnerability risks in your dependencies and used functions.
-                    Some vulnerabilities have been replaced by safe alternatives.'''
+                    Some vulnerabilities have been replaced by safe alternatives. \n\n'''
 
         if len(self.detected_vulnerable_functions) > 0:
             report += '# Vulnerable Functions \n'
@@ -121,7 +121,7 @@ class Report:
         report += vulnerable_functions_print
 
         if len(self.detected_vulnerable_imports) > 0:
-            report += '# Vulnerable Dependencies'
+            report += '# Vulnerable Dependencies \n'
             report += 'Some versions of dependencies used in the project might pose security threads. '
             report += 'Please make sure to inform users to use safe versions. \n'
             report += '| Dependency  | Vulnerable Versions | Reason | \n'
@@ -131,8 +131,8 @@ class Report:
 
         for imp in self.detected_vulnerable_imports:
             vulnerability_entry = ''
-            for imp_info in imp:
-                vulnerability_entry += '|' + imp.name + '|' + imp_info.v + '|' + imp_info.advisory + '|'
+            for imp_info in imp['info']:
+                vulnerability_entry += '|' + imp['name'] + '|' + imp_info['v'] + '|' + imp_info['advisory'] + '|\n'
 
             vulnerable_imports_print += vulnerability_entry + '\n\n'
 
@@ -145,10 +145,9 @@ class Report:
         else:
             report += 'No tests detected.'
 
-        report += '''--- \n
-        This tool was developed as part of a Software Engineering course. 
-        If you have feedback then please reply to this pull-request. Thank you!
-        '''
+        report += '--- \n \n'
+        report += 'This tool was developed as part of a Software Engineering course. '
+        report += 'If you have feedback then please reply to this pull-request. Thank you!'
 
         return report
 
