@@ -78,7 +78,7 @@ class Report:
             # vulnerability_entry += '\t' + vulnerability.line + ' | ' + '\n'
 
             if vulnerability.import_location:
-                vulnerability_entry += '\t Import: ' + vulnerability.import_location.line + ':' + vulnerability.import_location.column + ':' + vulnerability.import_location.name + '\n'
+                vulnerability_entry += '\t Import: ' + str(vulnerability.import_location.line) + ':' + str(vulnerability.import_location.column) + ':' + vulnerability.import_location.name + '\n'
 
             vulnerability_entry += '\t Detected vulnerability: ' + Back.RED + vulnerability.name + Style.RESET_ALL + '\n'
             vulnerability_entry += '\t Vulnerability reason: ' + vulnerability.reason + '\n'
