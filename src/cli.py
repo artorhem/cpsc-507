@@ -53,6 +53,8 @@ def main(url, path, replace, push, html):
     # todo: add to report and update
     outdated_dependencies = updater.outdated_dependencies
 
+    print outdated_dependencies
+
     if replace:
         # automatically replace detected vulnerabilities if available
         print "Replace detected vulnerabilities"
