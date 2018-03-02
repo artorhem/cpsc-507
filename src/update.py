@@ -43,8 +43,8 @@ class Updater:
         """
         Perform the update for all dependencies in the project.
         """
-        # todo
-        pass
+        for dependency in self.outdated_dependencies:
+            self.outdated_dependency(dependency)
 
     def update_dependency(self, dependency, version=None):
         """
@@ -53,8 +53,11 @@ class Updater:
         :param version: specific version dependency should be updated to
         if version is `None` then the latest version will be used
         """
-        # todo
-        pass
+        if version:
+            pip.main(['install --upgrade', str(dependency.name) + '==' + str(version)])
+        else:
+            # if version is None then automatically the newest version is installed
+            pip.main(['install --upgrade', str(dependency.name)])
 
     def __detect_installed_dependencies(self):
         """
@@ -97,5 +100,3 @@ class Updater:
                         available_versions
                     ))
                     break
-
-    # todo: we need to think about a update strategy
