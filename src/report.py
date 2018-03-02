@@ -6,7 +6,7 @@ class Report:
     def __init__(self,
                  detected_vulnerable_functions,
                  detected_vulnerable_imports,
-                 tests, updates, replace):
+                 tests, outdated_dependencies, updates, replace):
         """
         Creates a new report instance.
         :param detected_vulnerabilities: vulnerabilities that have been detected in the analysis
@@ -18,6 +18,7 @@ class Report:
         self.detected_vulnerable_functions = detected_vulnerable_functions
         self.detected_vulnerable_imports = detected_vulnerable_imports
         self.tests = tests
+        self.outdated_dependencies = outdated_dependencies
         self.updates = updates
         self.replace = replace
 
@@ -68,8 +69,9 @@ class Report:
         :return: report in formated plain text
         """
         vulnerable_functions_print = ''
-        tests_print = 'todo'  # todo
-        updates_print = 'todo'  # todo
+        tests_print = 'todo \n'  # todo
+        updates_print = 'todo \n'  # todo
+        outdated_print = ''
 
         for vulnerability in self.detected_vulnerable_functions:
             vulnerability_entry = vulnerability.file + ':' + str(vulnerability.line) + ':' + str(
@@ -91,6 +93,11 @@ class Report:
 
         report = 'Detected vulnerable functions: \n' + vulnerable_functions_print
         report += 'Executed Tests: \n' + tests_print  # todo
+
+        for dependency in self.outdated_dependencies:
+            outdated_print += '\t \033[1m' + dependency.name + '\033[0m installed: ' + dependency.version + ', latest: ' + dependency.all_versions[-1] + '\n'
+
+        report += 'Outdated dependencies: \n' + outdated_print
         report += 'Updated dependencies: \n' + updates_print  # todo
 
         return report

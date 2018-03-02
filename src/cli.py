@@ -53,14 +53,12 @@ def main(url, path, replace, push, html):
     # todo: add to report and update
     outdated_dependencies = updater.outdated_dependencies
 
-    print outdated_dependencies
-
     if replace:
         # automatically replace detected vulnerabilities if available
         print "Replace detected vulnerabilities"
         vulnerability_analyzer.replace_vulnerabilities()
 
-    report = Report(vulnerable_functions, vulnerable_imports, [], [], replace)
+    report = Report(vulnerable_functions, vulnerable_imports, [], outdated_dependencies, [], replace)
 
     # automatically create pull request
     if push and (len(vulnerable_functions) > 0 or len(vulnerable_imports) > 0):
