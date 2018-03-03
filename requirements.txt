@@ -7,3 +7,4 @@ python-json-logger
 yattag
 colorama
 github3.py
+safety-db

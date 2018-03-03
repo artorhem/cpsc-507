@@ -1,5 +1,6 @@
 # BugRevelio
 
+[todo: description]
 
 ## Installation
 
@@ -9,7 +10,7 @@
 
 ## Configuration
 
-In order for the tool to access the Github API an API access token needs to be set as environment variable: `export GITHUB_ACCESS_TOKEN=<token>`.
+In order for the tool to access the Github API the Github username and password need to be set as environment variables: `export GITHUB_USER=<user>` and `export GITHUB_PASSWORD=<password>`.
 
 ## Usage
 
@@ -36,11 +37,11 @@ To build the container:
 
 To run the container:
 
-`docker run --name 507 -v /tmp/dock:/tmp -e GITHUB_ACCESS_TOKEN="token" 507 & `
+`docker run --name 507 -v /tmp/dock:/tmp -e GITHUB_USER="username" -e GITHUB_PASSWORD="password" 507 & `
 
 To remove the container:
 
-`docker rm 507  `
+`docker rm 507`
 
 
 ## Supported Testing Frameworks
