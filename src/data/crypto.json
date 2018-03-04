@@ -1,16 +1,16 @@
 {
-    "hashlib.md5()":
+    "hashlib.md5":
     {
       "safe": 0,
       "type": "hash",
-      "update_with": "hashlib.sha512()",
+      "update_with": "hashlib.sha512",
       "reason": ""
     },
-    "hashlib.sha1()":
+    "hashlib.sha1":
     {
       "safe": 0,
       "type": "hash",
-      "update_with": "hashlib.sha512()",
+      "update_with": "hashlib.sha512",
       "reason": ""
     },
     "Crypto.Hash.MD5":
