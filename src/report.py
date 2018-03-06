@@ -28,6 +28,12 @@ class Report:
         :param output_path: location of the generated HTML file containing the report
         """
         doc, tag, text, line = Doc().ttl()
+        doc.asis('<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">')
+
+        with open('css/style.css', 'r') as style_file:
+            custom_style = style_file.read().replace('\n', '')
+
+        line('style', custom_style)
         line('h1', 'Analysis Report')
         line('h2', 'Detected vulnerable functions')
 
@@ -35,27 +41,40 @@ class Report:
 
         with tag('div', id='vulnerabilities'):
             for vulnerability in self.detected_vulnerable_functions:
-                with tag('div', klass='entry'):
-                    with tag('div', klass='file_path'):
-                        text(vulnerability.file)
+                with tag('div', klass='bs-callout bs-callout-danger'):
+                    line('h4', vulnerability.name)
+
+                    text('Detected vulnerability: ')
+                    line('code',  vulnerability.name)
+                    doc.stag('br')
+
+                    text('Location: ')
+                    line('i',  vulnerability.file)
+                    doc.stag('br')
 
                     if vulnerability.import_location:
-                        with tag('div', klass='import'):
-                            text(
-                                'Import: ' + vulnerability.import_location.line + ':' + vulnerability.import_location.column + ':' + vulnerability.import_location.name)
+                        text('Import: ')
+                        line('code', str(vulnerability.import_location.line) + ':' + str(vulnerability.import_location.column) + ':' + vulnerability.import_location.name)
+                        doc.stag('br')
 
-                    with tag('div', klass='vulnerability'):
-                        text('Detected vulnerability: ' + vulnerability.name)
-
-                    with tag('div', klass='reason'):
-                        text('Vulnerability reason: ' + vulnerability.reason)
-
-                    with tag('div', klass='replacement'):
-                        text('Suggested replacement: ' + vulnerability.update)
+                    text('Vulnerability reason: ' + vulnerability.reason)
+                    doc.stag('br')
+                    text('Suggested replacement: ')
+                    line('code',  vulnerability.update)
+                    doc.stag('br')
 
                     if self.replace:
-                        with tag('div', klass='replacement'):
-                            text('Automatically replaced with: ' + vulnerability.update)
+                        text('Automatically replaced with: ')
+                        line('code',  vulnerability.update)
+
+        line('h2', 'Outdated Dependencies')
+
+        for dependency in self.outdated_dependencies:
+            with tag('div', klass='bs-callout bs-callout-warning'):
+                line('h4', dependency.name)
+                text('Installed: ' + dependency.version)
+                doc.stag('br')
+                text('Latest: ' + dependency.all_versions[-1])
 
         result = doc.getvalue()
         file = open(output_path, 'w')
