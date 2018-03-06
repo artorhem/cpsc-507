@@ -13,7 +13,7 @@
     consistent despite the choice of testing framework.
     TODO: check if the project has a travis.yml file. That information is usable by tox.
 """
-import ConfigParser
+import configparser
 import pytest
 import tox
 import os
@@ -35,17 +35,28 @@ class TestInfo:
         self.testDir = self.find_testdir()
         self.requirementFiles = self.find_requirements_file()  # Array of all files that match the requirements[-\w] regex
         self.testRunner = None  # Hash -> <TestRunner,TestDir>
-        self.toxPath = self.findToxIni()  # path to the original tox file, or the created tox file
         self.cfgPath = None  # path to the setup.cfg file, None if absent
-        self.supportedPythons = None  # Array
+        self.supportedPythons = self.findPyVersions()  # Array
+        self.constraintsFile = self.find_constraints_file()
+        self.toxPath = self.findToxIni()  # path to the original tox file, or the created tox file
 
     def find_requirements_file(self):
         reqfiles = []
-        for dirpath, dirs, files in os.walk(self.path):
+        for dirpath, dirs, files in os.walk(self.path,topdown=False):
             for file in files:
                 if re.match('^requirements[-\w]*.txt', file):
                     reqfiles.append(os.path.join(dirpath, file))
         return (reqfiles)
+
+    def find_constraints_file(self):
+        reqfiles = []
+        for dirpath, dirs, files in os.walk(self.path):
+            for file in files:
+                if re.match('[\w]*constraints[-\w]*.txt', file):
+                    reqfiles.append(os.path.join(dirpath, file))
+        if len(reqfiles) == 0 :
+            return None
+        return reqfiles
 
     def find_testdir(self):
         '''
@@ -54,11 +65,14 @@ class TestInfo:
 
         '''
         testdirInfo = {}
-        for dirpath, dirs, files in os.walk(self.path):
+        for dirpath, dirs, files in os.walk(self.path,topdown=True):
             for directory in dirs:
+                
                 if (re.match('^test[s]$', directory)):
                     testdirInfo['basepath'] = self.path
                     testdirInfo['walkthrough'] = directory
+                    break
+        print testdirInfo
 
         '''
         
@@ -75,7 +89,7 @@ class TestInfo:
             args, kwargs = mock_setup.call_args
             testdirInfo['setuptools'] = kwargs.get('test_suite', [])
         except Exception as e:
-            print("The setup.py was not found. Skipping.")
+            print(str(e))
         return testdirInfo
 
     '''
@@ -86,18 +100,55 @@ class TestInfo:
         for dirpath, dirs, files in os.walk(self.path):
             for file in files:
                 if (re.match('^tox.ini$', file)):
-                    return ['dirpath', file]
+                    return [dirpath, file]
         print("No tox.ini file was found. Revelio will create one now at " + self.path)
+        self.createToxIni()
 
     '''The function testRunners() identifies the test framework used, and the command needed to execute the tests'''
 
-    def testRunners(self):
-        pass
+    def createToxIni(self):
+        '''
+        There is no reliable way of determining what test framework is used by a project
+        In the absence of such information, we resort to using pytests and hoping that it is able to
+        find the tests and work its magic.
+        I have spent time to see if nose and pytests give similar results, and to the best of my understanding, they do.
 
-    '''
-    This following is a placeholder function which might not be needed. It reads the setup.cfg file. 
-    Another function will be created to write the cfg file -- again if needed. TBD. 
-    '''
 
-    def cfgPath(selfself):
-        pass
+        This function accepts no input. It fills in the relevant portions in the tox template file, and saves it in the
+        repo basepath.
+        '''
+        config = configparser.ConfigParser()
+        config.readfp(open('tox_template.ini'))
+        envString = ", ".join(self.supportedPythons)
+        config.set('tox','envlist',envString)
+        with open(os.path.join(self.path,'tox.ini'),'wb') as configfile:
+            config.write(configfile)
+
+
+
+    def findPyVersions(self):
+        setupfile = os.path.join(self.path,'setup.py')
+        env =[]
+
+        if os.path.exists(setupfile):
+            filehandle = open(setupfile,'r')
+            lines = filehandle.readlines()
+            pattern = re.compile("::\s(\d).(\d)")
+            for line in lines:
+                found = pattern.findall(line)
+                if found:
+                    joiner =''
+                    env.append('py'+joiner.join(found[0]))
+        else:
+            #In the event we don't explicitly find a version list,
+            #we force create one. Suck on that!
+            env = ['py27','py26','py32','py33','py35','py36']
+        
+        return env
+
+
+    def runToxTest(self):
+        os.chdir(self.path)
+        from tox.__main__ import main
+        main()
+        #tox.cmdline()
