@@ -135,11 +135,13 @@ class Report:
         vulnerable_functions_print = ''
 
         for vulnerability in self.detected_vulnerable_functions:
-            vulnerability_entry = '*' + vulnerability.file + ':' + str(vulnerability.line) + ':' + str(
+            vulnerability_entry = '*' + vulnerability.file.split('/')[-1] + ':' + str(vulnerability.line) + ':' + str(
                 vulnerability.column) + ':* '
 
             vulnerability_entry += vulnerability.name + '\n'
-            vulnerability_entry += '* Reason: ' + vulnerability.reason + '\n'
+            if vulnerability.reason != '':
+                vulnerability_entry += '* Reason: ' + vulnerability.reason + '\n'
+
             vulnerability_entry += '* Replacement: ' + vulnerability.update + '\n'
 
             vulnerable_functions_print += vulnerability_entry + '\n\n'
@@ -149,16 +151,16 @@ class Report:
         if len(self.detected_vulnerable_imports) > 0:
             report += '# Vulnerable Dependencies \n'
             report += 'Some versions of dependencies used in the project might pose security threads. '
-            report += 'Please make sure to inform users to use safe versions. \n'
+            report += 'Please make sure to inform users to use safe versions. \n\n'
             report += '| Dependency  | Vulnerable Versions | Reason | \n'
-            report += '| ------------| ------------------- | ------ | \n'
+            report += '| --------------| -------------------- | ------- | \n'
 
         vulnerable_imports_print = ''
 
         for imp in self.detected_vulnerable_imports:
             vulnerability_entry = ''
             for imp_info in imp['info']:
-                vulnerability_entry += '|' + imp['name'] + '|' + imp_info['v'] + '|' + imp_info['advisory'] + '|\n'
+                vulnerability_entry += '|' + imp['name'] + '|' + imp_info['v'] + '|' + imp_info['advisory'].replace('\n', '').replace('\r', '') + '|\n'
 
             vulnerable_imports_print += vulnerability_entry + '\n\n'
 
@@ -171,7 +173,7 @@ class Report:
         else:
             report += 'No tests detected.'
 
-        report += '--- \n \n'
+        report += ' \n \n --- \n \n'
         report += 'This tool was developed as part of a Software Engineering course. '
         report += 'If you have feedback then please reply to this pull-request. Thank you!'
 
