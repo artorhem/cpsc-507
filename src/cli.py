@@ -4,6 +4,8 @@ from github_repo_handler import GithubRepoHandler
 from update import Updater
 import uuid
 from report import Report
+import logging
+from pythonjsonlogger import jsonlogger
 
 
 @click.command()
@@ -76,6 +78,24 @@ def main(url, path, replace, push, html):
 
     if html:
         report.html_report(html)
+
+    if url:
+        # collect relevant metrics
+        # todo: test metrics
+        repo_metrics = gh_handler.get_repository_metrics()
+        vulnerability_metrics = vulnerability_analyzer.get_vulnerability_metrics()
+        repo_metrics.update(vulnerability_metrics)
+
+        # setup logging
+        logger = logging.getLogger()
+        logHandler = logging.FileHandler('/tmp/metrics.json')
+        logger.addHandler(logHandler)
+        formatter = jsonlogger.JsonFormatter()
+        logHandler.setFormatter(formatter)
+        logger.setLevel(logging.INFO)
+
+        logger.info(url, extra=repo_metrics)
+
 
     # todo: delete downloaded repo
 

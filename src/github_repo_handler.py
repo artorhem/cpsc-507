@@ -1,13 +1,7 @@
 from github import Github
 import os
 from git import Repo
-import logging
-from pythonjsonlogger import jsonlogger
 import github3
-
-# get token that allows accessing the github API
-# the token must be set as environment variable
-g = Github(os.environ['GITHUB_USER'], os.environ['GITHUB_PASSWORD'])
 
 
 class GithubRepoHandler:
@@ -32,6 +26,10 @@ class GithubRepoHandler:
         # accessing history data) can be performed through this object
         self.local_repo = None
 
+        # get token that allows accessing the github API
+        # the token must be set as environment variable
+        self.g = Github(os.environ['GITHUB_USER'], os.environ['GITHUB_PASSWORD'])
+
     def download_repository(self, target):
         """
         Downloads a specific github repository to the local machine.
@@ -40,7 +38,7 @@ class GithubRepoHandler:
         access the remote repo
         """
         # get access handle to remote repository
-        remote_github_user = g.get_user(self.git_url.split('/')[-2])
+        remote_github_user = self.g.get_user(self.git_url.split('/')[-2])
 
         # workaround: remote_github_user.get_repo(<name>) is not working
         for repo in list(remote_github_user.get_repos()):
@@ -50,7 +48,7 @@ class GithubRepoHandler:
                 break
 
         # create a fork
-        self.remote_fork = g.get_user().create_fork(self.remote_original_repo)
+        self.remote_fork = self.g.get_user().create_fork(self.remote_original_repo)
 
         # download repo and make available locally
         self.local_repo = Repo.clone_from(self.remote_fork.git_url, target)
@@ -60,14 +58,6 @@ class GithubRepoHandler:
         Collect metrics of specific repository and write them into a log file.
         The metrics will later be useful for the evaluation.
         """
-        # setup logging
-        logger = logging.getLogger()
-        logHandler = logging.FileHandler('/tmp/metrics.json')
-        logger.addHandler(logHandler)
-        formatter = jsonlogger.JsonFormatter()
-        logHandler.setFormatter(formatter)
-        logger.setLevel(logging.INFO)
-
         # collect metrics
         total_commits = len(list(self.remote_original_repo.get_commits()))
         total_tags = len(list(self.remote_original_repo.get_tags()))
@@ -89,12 +79,11 @@ class GithubRepoHandler:
         age = self.remote_original_repo.created_at
         total_forks = self.remote_original_repo.forks_count
         total_stars = self.remote_original_repo.stargazers_count
+        
+        last_commit = list(self.remote_original_repo.get_commits())[0].commit.committer.date
 
-        # todo
-        # last_commit = list(self.remote_original_repo.get_commits())[0].committer.created_at
-        last_commit = None
-
-        logger.info(self.remote_original_repo.git_url, extra={
+        return {
+            'repo_url': self.git_url,
             'total_commits': total_commits,
             'total_tags': total_tags,
             'total_contributors': total_contributors,
@@ -106,7 +95,7 @@ class GithubRepoHandler:
             'total_forks': total_forks,
             'total_stars': total_stars,
             'last_commit': last_commit
-        })
+        }
 
     def push_updates(self, email, name, title, body, head, base):
         """
