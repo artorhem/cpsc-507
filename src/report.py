@@ -162,7 +162,8 @@ class Report:
             for imp_info in imp['info']:
                 vulnerability_entry += '|' + imp['name'] + '|' + imp_info['v'] + '|' + imp_info['advisory'].replace('\n', '').replace('\r', '') + '|\n'
 
-            vulnerable_imports_print += vulnerability_entry + '\n\n'
+            vulnerable_imports_print += vulnerability_entry + '\n'
+            vulnerable_imports_print += 'Source: [Safety](https://github.com/pyupio/safety) \n\n'
 
         report += vulnerable_imports_print
 
@@ -178,4 +179,3 @@ class Report:
         report += 'If you have feedback then please reply to this pull-request. Thank you!'
 
         return report
-
