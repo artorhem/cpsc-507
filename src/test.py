@@ -21,6 +21,7 @@ import re
 import mock
 import sys
 import logging
+from pkg_resources import parse_version
 from pythonjsonlogger import jsonlogger
 
 
@@ -33,12 +34,11 @@ class TestInfo:
         """
         self.path = path
         self.testDir = self.find_testdir()
-        self.requirementFiles = self.find_requirements_file()# Array of all files that match the requirements[-\w] regex
-        self.mergedRequirementsFile = None
+        self.mergedRequirementsFile = self.find_requirements_file()# Array of all files that match the requirements[-\w] regex
+        self.constraintsFile = self.find_constraints_file()
         self.testRunner = None  # Hash -> <TestRunner,TestDir>
         self.cfgPath = None  # path to the setup.cfg file, None if absent
         self.supportedPythons = self.findPyVersions()  # Array
-        self.constraintsFile = self.find_constraints_file()
         self.toxPath = self.findToxIni()  # path to the original tox file, or the created tox file
 
     def find_requirements_file(self):
@@ -50,10 +50,10 @@ class TestInfo:
 
         if(len(reqfiles)==0):
             return None
-        if len(reqfiles) == 1:
-            return (reqfiles[1])
+        elif len(reqfiles) == 1:
+            return (reqfiles[0])
         else:
-            return self.merge_reqfiles(reqfiles) #Create one file out of many.
+            return self.merge_files(reqfiles) #Create one file out of many.
 
     def find_constraints_file(self):
         consfiles = []
@@ -61,9 +61,13 @@ class TestInfo:
             for file in files:
                 if re.match('[\w]*constraints[-\w]*.txt', file):
                     consfiles.append(os.path.join(dirpath, file))
+        print("\n\nin find_constrains......found......"+"\n".join(consfiles)+"\n\n")
         if len(consfiles) == 0 :
             return None
-        return consfiles
+        elif len(consfiles) == 1:
+            return consfiles[0]
+        else:
+            return self.merge_files(consfiles)
 
     def find_testdir(self):
         '''
@@ -128,6 +132,8 @@ class TestInfo:
         config.readfp(open('tox_template.ini'))
         envString = ", ".join(self.supportedPythons)
         config.set('tox','envlist',envString)
+        depString = "\n"+"-r"+self.mergedRequirementsFile+"\n-c"+self.constraintsFile
+        config.set('testenv','deps',depString)
         with open(os.path.join(self.path,'tox.ini'),'wb') as configfile:
             config.write(configfile)
 
@@ -160,30 +166,30 @@ class TestInfo:
         main()
         #tox.cmdline()
 
-    def merge_reqfiles(self, reqfiles):
+    def merge_files(self, files):
         pkg_dict = {}
-        for reqfile in range(0, len(reqfiles)):
-            if len(dict.keys()) ==0:
-                pkg_dict = self.generate_dict_libs(reqfile)
+        print(files)
+        for i in range(0, len(files)):
+            fileitem = files[i]
+            if len(pkg_dict.keys()) ==0:
+                print(fileitem)
+                pkg_dict = self.generate_dict_libs(fileitem)
             else:
-                pkg_dict = self.merge_dict(pkg_dict,self.generate_dict_libs(reqfile))
+                pkg_dict = self.merge_dict(pkg_dict,self.generate_dict_libs(fileitem))
 
-        print("Done processing the requirements file")
         print("Now generatig the merged file")
-        self.generate_requirements_txt(pkg_dict)
-
-
-
+        return self.generate_requirements_txt(pkg_dict)
 
     def open_file(self, file):
         try:
             f = open(file, 'r').read()
             return f
         except Exception as e:
-            return logging.error(e)
+            raise logging.error(e)
 
     def generate_dict_libs(self, file):
-        text = self.remove_comments(self.open_file(file))
+        text = self.open_file(file)
+        text = self.remove_comments(text)
         lib_list = []
         for item in text.split('\n'):
             item = item.split('==')
@@ -196,26 +202,24 @@ class TestInfo:
     def generate_requirements_txt(self,dict_libs):
 
         txt = ''
-        for key, value in self.dict_libs.items():
+        for key, value in dict_libs.items():
             if len(value) > 0:
                 txt += ''.join('{}=={}\n'.format(key, value))
             else:
                 txt += ''.join('{}\n'.format(key))
-        file_path = os.path.join(self.path,'./requirements-merged.txt')
+        file_path = os.path.join(self.path,'requirements-merged.txt')
         count = 0
         while os.path.exists(file_path):
             count += 1
-            file_path = os.path.join(self.path,'requirements-merged({}).txt'.format(count))
+            file_path = os.path.join(self.path,'requirements-merged_{}.txt'.format(count))
 
         mode = 'wx' if sys.version_info[0] < 3 else 'x'
         f = open(file_path, mode)
         f.write(txt)
         f.close()
-        print('create new file {}'.format(file_path))
-        self.mergedRequirementsFile = file_path
+        return file_path
 
-    def remove_comments(text):
-
+    def remove_comments(self,text):
         #remove comments
         rx_comments = re.compile( '#+.*?\\n|^\\n|\\n$', re.M | re.S)
         #remove whitespace
@@ -228,7 +232,7 @@ class TestInfo:
         base_dict = dict(base_dict)
         for key_item in m_dict:
             if key_item in base_dict:
-                if base_dict.get(key_item) < m_dict.get(key_item):
+                if parse_version(base_dict.get(key_item)) > parse_version(m_dict.get(key_item)):
                     base_dict[key_item] = m_dict[key_item]
             else:
                 base_dict[key_item] = m_dict[key_item]
