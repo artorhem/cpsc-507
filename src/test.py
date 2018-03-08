@@ -19,7 +19,7 @@ import tox
 import os
 import re
 import mock
-from sys import path
+import sys
 import logging
 from pythonjsonlogger import jsonlogger
 
@@ -33,7 +33,8 @@ class TestInfo:
         """
         self.path = path
         self.testDir = self.find_testdir()
-        self.requirementFiles = self.find_requirements_file()  # Array of all files that match the requirements[-\w] regex
+        self.requirementFiles = self.find_requirements_file()# Array of all files that match the requirements[-\w] regex
+        self.mergedRequirementsFile = None
         self.testRunner = None  # Hash -> <TestRunner,TestDir>
         self.cfgPath = None  # path to the setup.cfg file, None if absent
         self.supportedPythons = self.findPyVersions()  # Array
@@ -46,17 +47,23 @@ class TestInfo:
             for file in files:
                 if re.match('^requirements[-\w]*.txt', file):
                     reqfiles.append(os.path.join(dirpath, file))
-        return (reqfiles)
+
+        if(len(reqfiles)==0):
+            return None
+        if len(reqfiles) == 1:
+            return (reqfiles[1])
+        else:
+            return self.merge_reqfiles(reqfiles) #Create one file out of many.
 
     def find_constraints_file(self):
-        reqfiles = []
+        consfiles = []
         for dirpath, dirs, files in os.walk(self.path):
             for file in files:
                 if re.match('[\w]*constraints[-\w]*.txt', file):
-                    reqfiles.append(os.path.join(dirpath, file))
-        if len(reqfiles) == 0 :
+                    consfiles.append(os.path.join(dirpath, file))
+        if len(consfiles) == 0 :
             return None
-        return reqfiles
+        return consfiles
 
     def find_testdir(self):
         '''
@@ -82,7 +89,7 @@ class TestInfo:
         '''
 
         import setuptools
-        path.append(self.path)
+        #path.append(self.path)
         try:
             with mock.patch.object(setuptools, 'setup') as mock_setup:
                 import setup
@@ -152,3 +159,77 @@ class TestInfo:
         from tox.__main__ import main
         main()
         #tox.cmdline()
+
+    def merge_reqfiles(self, reqfiles):
+        pkg_dict = {}
+        for reqfile in range(0, len(reqfiles)):
+            if len(dict.keys()) ==0:
+                pkg_dict = self.generate_dict_libs(reqfile)
+            else:
+                pkg_dict = self.merge_dict(pkg_dict,self.generate_dict_libs(reqfile))
+
+        print("Done processing the requirements file")
+        print("Now generatig the merged file")
+        self.generate_requirements_txt(pkg_dict)
+
+
+
+
+    def open_file(self, file):
+        try:
+            f = open(file, 'r').read()
+            return f
+        except Exception as e:
+            return logging.error(e)
+
+    def generate_dict_libs(self, file):
+        text = self.remove_comments(self.open_file(file))
+        lib_list = []
+        for item in text.split('\n'):
+            item = item.split('==')
+            if len(item) == 1:
+                item.append('')
+            lib_list.append(tuple(item))
+        return dict(lib_list)
+
+
+    def generate_requirements_txt(self,dict_libs):
+
+        txt = ''
+        for key, value in self.dict_libs.items():
+            if len(value) > 0:
+                txt += ''.join('{}=={}\n'.format(key, value))
+            else:
+                txt += ''.join('{}\n'.format(key))
+        file_path = os.path.join(self.path,'./requirements-merged.txt')
+        count = 0
+        while os.path.exists(file_path):
+            count += 1
+            file_path = os.path.join(self.path,'requirements-merged({}).txt'.format(count))
+
+        mode = 'wx' if sys.version_info[0] < 3 else 'x'
+        f = open(file_path, mode)
+        f.write(txt)
+        f.close()
+        print('create new file {}'.format(file_path))
+        self.mergedRequirementsFile = file_path
+
+    def remove_comments(text):
+
+        #remove comments
+        rx_comments = re.compile( '#+.*?\\n|^\\n|\\n$', re.M | re.S)
+        #remove whitespace
+        rx_whitespace = re.compile( '\\n+', re.M | re.S)
+        text = rx_whitespace.sub('\n', text)
+        text = rx_comments.sub('', text)
+        return text
+
+    def merge_dict(self,base_dict, m_dict):
+        base_dict = dict(base_dict)
+        for key_item in m_dict:
+            if key_item in base_dict:
+                if base_dict.get(key_item) < m_dict.get(key_item):
+                    base_dict[key_item] = m_dict[key_item]
+            else:
+                base_dict[key_item] = m_dict[key_item]
+        return base_dict
