@@ -1,0 +1,4 @@
+pygithub
+pip
+gitpython
+github3.py
