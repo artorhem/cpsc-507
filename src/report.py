@@ -41,7 +41,12 @@ class Report:
 
         with tag('div', id='vulnerabilities'):
             for vulnerability in self.detected_vulnerable_functions:
-                with tag('div', klass='bs-callout bs-callout-danger'):
+                severity_class = 'bs-callout-danger'
+
+                if vulnerability.severity == 'warning':
+                    severity_class = 'bs-callout-warning'
+
+                with tag('div', klass='bs-callout ' + severity_class):
                     line('h4', vulnerability.name)
 
                     text('Detected vulnerability: ')
@@ -104,6 +109,7 @@ class Report:
             vulnerability_entry += '\t Detected vulnerability: ' + Back.RED + vulnerability.name + Style.RESET_ALL + '\n'
             vulnerability_entry += '\t Vulnerability reason: ' + vulnerability.reason + '\n'
             vulnerability_entry += '\t Suggested replacements: ' + vulnerability.update + '\n'
+            vulnerability_entry += '\t Severity: ' + vulnerability.severity + '\n'
 
             if self.replace:
                 vulnerability_entry += '\t Automatically replaced with: ' + vulnerability.update + '\n\n'
@@ -143,6 +149,7 @@ class Report:
                 vulnerability_entry += '* Reason: ' + vulnerability.reason + '\n'
 
             vulnerability_entry += '* Replacement: ' + vulnerability.update + '\n'
+            vulnerability_entry += '* Severity: ' + vulnerability.severity + '\n'
 
             vulnerable_functions_print += vulnerability_entry + '\n\n'
 
