@@ -71,5 +71,11 @@
       "type": "encryption",
       "update_with": "Crypto.Cipher.AES.new(___0, AES.MODE_CFB, ___2)",
       "reason": ""
+    },
+    "yaml.load":{
+      "safe":0,
+      "type":"pickle",
+      "update_with": "yaml.safe_load(___0)",
+      "reason": "Untrusted input can result in arbitrary code execution."
     }
 }

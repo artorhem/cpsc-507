@@ -6,6 +6,7 @@ import uuid
 from report import Report
 import logging
 from pythonjsonlogger import jsonlogger
+from test import TestInfo 
 
 
 @click.command()
@@ -26,7 +27,7 @@ def main(url, path, replace, push, html):
     :param html: path to html file which will contain report
     """
     # analyze source code of provided project
-    print "Start analysis"
+    print("Start analysis")
 
     # store remote repo locally in /tmp
     local_repo_path = '/tmp/' + str(uuid.uuid4())
@@ -57,14 +58,19 @@ def main(url, path, replace, push, html):
 
     if replace:
         # automatically replace detected vulnerabilities if available
-        print "Replace detected vulnerabilities"
+        print("Replace detected vulnerabilities")
         vulnerability_analyzer.replace_vulnerabilities_in_ast()
+
+    # run tests
+    tester = TestInfo(local_repo_path)
+    tester.runToxTest()
+
 
     report = Report(vulnerable_functions, vulnerable_imports, [], outdated_dependencies, [], replace)
 
     # automatically create pull request
     if push and (len(vulnerable_functions) > 0 or len(vulnerable_imports) > 0):
-        print "Create pull-request"
+        print("Create pull-request")
 
         # todo: include report in pull-request
         gh_handler.push_updates("bugrevelio@byom.de",
@@ -74,7 +80,7 @@ def main(url, path, replace, push, html):
                                 "bugrevelio:master",
                                 "master")
 
-    print report.plain_text_report()
+    print(report.plain_text_report())
 
     if html:
         report.html_report(html)

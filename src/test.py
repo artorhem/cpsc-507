@@ -61,7 +61,7 @@ class TestInfo:
             for file in files:
                 if re.match('[\w]*constraints[-\w]*.txt', file):
                     consfiles.append(os.path.join(dirpath, file))
-        print("\n\nin find_constrains......found......"+"\n".join(consfiles)+"\n\n")
+        print(("\n\nin find_constrains......found......"+"\n".join(consfiles)+"\n\n"))
         if len(consfiles) == 0 :
             return None
         elif len(consfiles) == 1:
@@ -71,7 +71,7 @@ class TestInfo:
 
     def find_testdir(self):
         '''
-        finds the directory where tests are placed, and returns a hash containing the locations found by looking at multiple sources.
+        Finds the directory where tests are placed, and returns a hash containing the locations found by looking at multiple sources.
         :return: as of now, the hash : {basepath:<rootdir for repo>,'walkthrough':<dirname>,'setuptools:<dirname>
 
         '''
@@ -83,7 +83,7 @@ class TestInfo:
                     testdirInfo['basepath'] = self.path
                     testdirInfo['walkthrough'] = directory
                     break
-        print testdirInfo
+        print(testdirInfo)
 
         '''
         
@@ -100,7 +100,7 @@ class TestInfo:
             args, kwargs = mock_setup.call_args
             testdirInfo['setuptools'] = kwargs.get('test_suite', [])
         except Exception as e:
-            print(str(e))
+            print((str(e)))
         return testdirInfo
 
     '''
@@ -112,7 +112,7 @@ class TestInfo:
             for file in files:
                 if (re.match('^tox.ini$', file)):
                     return [dirpath, file]
-        print("No tox.ini file was found. Revelio will create one now at " + self.path)
+        print(("No tox.ini file was found. Revelio will create one now at " + self.path))
         self.createToxIni()
 
     '''The function testRunners() identifies the test framework used, and the command needed to execute the tests'''
@@ -162,8 +162,9 @@ class TestInfo:
 
     def runToxTest(self):
         os.chdir(self.path)
-        from tox.__main__ import main
-        main()
+        import tox.session
+        print('Run tests')
+        tox.session.main([])
         #tox.cmdline()
 
     def merge_files(self, files):
@@ -171,7 +172,7 @@ class TestInfo:
         print(files)
         for i in range(0, len(files)):
             fileitem = files[i]
-            if len(pkg_dict.keys()) ==0:
+            if len(list(pkg_dict.keys())) ==0:
                 print(fileitem)
                 pkg_dict = self.generate_dict_libs(fileitem)
             else:
@@ -202,7 +203,7 @@ class TestInfo:
     def generate_requirements_txt(self,dict_libs):
 
         txt = ''
-        for key, value in dict_libs.items():
+        for key, value in list(dict_libs.items()):
             if len(value) > 0:
                 txt += ''.join('{}=={}\n'.format(key, value))
             else:

@@ -80,7 +80,7 @@ class Report:
         file = open(output_path, 'w')
         file.write(result)
         file.close()
-        print 'Wrote HTML report: ' + output_path
+        print('Wrote HTML report: ' + output_path)
 
     def plain_text_report(self):
         """

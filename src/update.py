@@ -1,8 +1,7 @@
 import pip
-from snakefood.util import iter_pyfiles, setup_logging, def_ignores
-from snakefood.find import find_imports
+from findimports import find_imports
 import contextlib
-import re
+import re, sys, os
 from collections import namedtuple
 from pkg_resources import parse_version
 
@@ -15,7 +14,7 @@ Dependency = namedtuple("Dependency", ["name", "version", "all_versions"])
 @contextlib.contextmanager
 def capture():
     import sys
-    from cStringIO import StringIO
+    from io import StringIO
     oldout, olderr = sys.stdout, sys.stderr
     try:
         out = [StringIO(), StringIO()]
@@ -65,8 +64,12 @@ class Updater:
         in the path.
         """
         all_symnames = set()
-        for fn in iter_pyfiles([self.path], None):
-            all_symnames.update(x[0].split('.')[0] for x in find_imports(fn, True, []) if not x[2])
+        for root, dirs, files in os.walk(self.path):
+            for file in files:
+                # only analyze python files
+                if file.endswith(".py"):
+                    file_path = os.path.join(root, file)
+                    all_symnames.update(x.name.split('.')[0] for x in find_imports(file_path))
 
         packages = pip.utils.get_installed_distributions()
 
