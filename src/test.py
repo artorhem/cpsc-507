@@ -23,7 +23,7 @@ import sys
 import logging
 from pkg_resources import parse_version
 from pythonjsonlogger import jsonlogger
-
+import json
 
 class TestInfo:
     # TODO:Setup logging. too. lazy. :(
@@ -164,7 +164,7 @@ class TestInfo:
         os.chdir(self.path)
         import tox.session
         print('Run tests')
-        tox.session.main([])
+        tox.session.main(["--result-json=bugrevelio.json"])
         #tox.cmdline()
 
     def merge_files(self, files):
@@ -238,3 +238,12 @@ class TestInfo:
             else:
                 base_dict[key_item] = m_dict[key_item]
         return base_dict
+
+    def getTestLog(self):
+        json_data=open(self.path+'bugrevelio.json')
+        data = json.load(json_data)
+        json_data.close()
+
+        return data
+
+
