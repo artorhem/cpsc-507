@@ -94,7 +94,7 @@ def main(url, path, replace, push, html):
 
         # setup logging
         logger = logging.getLogger()
-        logHandler = logging.FileHandler('/tmp/metrics.json')
+        logHandler = logging.FileHandler('/tmp/out/metrics.json')
         logger.addHandler(logHandler)
         formatter = jsonlogger.JsonFormatter()
         logHandler.setFormatter(formatter)
