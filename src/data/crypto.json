@@ -3,14 +3,14 @@
     {
       "safe": 0,
       "type": "hash",
-      "update_with": "hashlib.sha512",
+      "update_with": "hashlib.sha512()",
       "reason": ""
     },
     "hashlib.sha1":
     {
       "safe": 0,
       "type": "hash",
-      "update_with": "hashlib.sha512",
+      "update_with": "hashlib.sha512()",
       "reason": ""
     },
     "Crypto.Hash.MD5":
@@ -25,6 +25,13 @@
       "safe": 0,
       "type": "hash",
       "update_with": "Crypto.Hash.SHA512",
+      "reason": ""
+    },
+    "Crypto.Hash.SHA.new":
+    {
+      "safe": 0,
+      "type": "hash",
+      "update_with": "Crypto.Hash.SHA512.new()",
       "reason": ""
     },
     "cryptography.hazmat.primitives.hashes.MD5":
@@ -47,10 +54,22 @@
       "update_with": "Crypto.Cipher.AES",
       "reason": ""
     },
+    "Crypto.Cipher.Blowfish.new": {
+      "safe": 0,
+      "type": "encryption",
+      "update_with": "Crypto.Cipher.AES.new(___0, AES.MODE_CFB, ___2)",
+      "reason": ""
+    },
     "Crypto.Cipher.ARC4":{
       "safe": 0,
       "type": "encryption",
       "update_with": "Crypto.Cipher.AES",
+      "reason": ""
+    },
+    "Crypto.Cipher.ARC4.new":{
+      "safe": 0,
+      "type": "encryption",
+      "update_with": "Crypto.Cipher.AES.new(___0, AES.MODE_CFB, ___2)",
       "reason": ""
     }
 }

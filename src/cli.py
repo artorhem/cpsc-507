@@ -58,7 +58,7 @@ def main(url, path, replace, push, html):
     if replace:
         # automatically replace detected vulnerabilities if available
         print "Replace detected vulnerabilities"
-        vulnerability_analyzer.replace_vulnerabilities()
+        vulnerability_analyzer.replace_vulnerabilities_in_ast()
 
     report = Report(vulnerable_functions, vulnerable_imports, [], outdated_dependencies, [], replace)
 
