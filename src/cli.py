@@ -7,7 +7,7 @@ from report import Report
 import logging
 from pythonjsonlogger import jsonlogger
 from test import TestInfo 
-
+import shutil
 
 @click.command()
 @click.option('--url', help='URL to a github repository')
@@ -62,8 +62,8 @@ def main(url, path, replace, push, html):
         vulnerability_analyzer.replace_vulnerabilities_in_ast()
 
     # run tests
-    tester = TestInfo(local_repo_path)
-    tester.runToxTest()
+    # tester = TestInfo(local_repo_path)
+    # tester.runToxTest()
 
 
     report = Report(vulnerable_functions, vulnerable_imports, [], outdated_dependencies, [], replace)
@@ -103,8 +103,8 @@ def main(url, path, replace, push, html):
         logger.info(url, extra=repo_metrics)
 
 
-    # todo: delete downloaded repo
-
+    # delete downloaded repo
+    shutil.rmtree(local_repo_path)
 
 if __name__ == '__main__':
     main()
