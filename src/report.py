@@ -72,6 +72,8 @@ class Report:
 
         line('h2', 'Outdated Dependencies')
 
+        # todo: tests
+
         for dependency in self.outdated_dependencies:
             with tag('div', klass='bs-callout bs-callout-warning'):
                 line('h4', dependency.name)
@@ -159,7 +161,7 @@ class Report:
         Create a report used for pull-requests.
         :return: Markdown report
         """
-        report = '''We found potential vulnerability risks in your dependencies and used functions.
+        report = '''Potential vulnerability risks were detected in your dependencies and used functions.
                     Some vulnerabilities have been replaced by safe alternatives. \n\n'''
 
         if len(self.detected_vulnerable_functions) > 0:
@@ -235,6 +237,7 @@ class Report:
 
         report += ' \n \n --- \n \n'
         report += 'This tool was developed as part of a Software Engineering course. '
+        report += 'The intention is to make project maintainers aware of potential vulnerabilities.'
         report += 'If you have feedback then please reply to this pull-request. Thank you!'
 
         return report
