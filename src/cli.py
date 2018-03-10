@@ -29,6 +29,14 @@ def main(url, path, replace, push, html):
     # analyze source code of provided project
     print("Start analysis")
 
+    # setup logging
+    logger = logging.getLogger()
+    logHandler = logging.FileHandler('/tmp/metrics.json')
+    logger.addHandler(logHandler)
+    formatter = jsonlogger.JsonFormatter()
+    logHandler.setFormatter(formatter)
+    logger.setLevel(logging.INFO)
+
     # store remote repo locally in /tmp
     local_repo_path = '/tmp/' + str(uuid.uuid4())
     gh_handler = None
@@ -42,11 +50,25 @@ def main(url, path, replace, push, html):
         # analyze local repo
         local_repo_path = path
 
-    updater = Updater(local_repo_path)
+    updater = None
+
+    try:
+        updater = Updater(local_repo_path)
+    except:
+        print("Cannot update due to AST error")
+
 
     vulnerability_analyzer = VulnerabilityAnalyzer(local_repo_path)
-    # check for vulnerable functions and vulnerable dependencies
-    vulnerability_analyzer.analyze()
+
+    try:
+        # check for vulnerable functions and vulnerable dependencies
+        vulnerability_analyzer.analyze()
+    except:
+        print("Python AST cannot be parsed. Terminating analysis")
+
+        if url:
+            logger.info(url, extra={'analysis_failed': True})
+        return -1
 
     vulnerable_functions = vulnerability_analyzer.detected_vulnerable_functions
     # todo: add to report and update
@@ -54,7 +76,11 @@ def main(url, path, replace, push, html):
     # todo: add to report and update
     vulnerable_installed_dependencies = vulnerability_analyzer.detected_vulnerable_installed_dependencies
     # todo: add to report and update
-    outdated_dependencies = updater.outdated_dependencies
+
+    outdated_dependencies = []
+
+    if updater:
+        outdated_dependencies = updater.outdated_dependencies
 
     if replace:
         # automatically replace detected vulnerabilities if available
@@ -98,14 +124,6 @@ def main(url, path, replace, push, html):
         repo_metrics = gh_handler.get_repository_metrics()
         vulnerability_metrics = vulnerability_analyzer.get_vulnerability_metrics()
         repo_metrics.update(vulnerability_metrics)
-
-        # setup logging
-        logger = logging.getLogger()
-        logHandler = logging.FileHandler('/tmp/metrics.json')
-        logger.addHandler(logHandler)
-        formatter = jsonlogger.JsonFormatter()
-        logHandler.setFormatter(formatter)
-        logger.setLevel(logging.INFO)
 
         logger.info(url, extra=repo_metrics)
 
