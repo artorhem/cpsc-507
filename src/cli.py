@@ -62,11 +62,18 @@ def main(url, path, replace, push, html):
         vulnerability_analyzer.replace_vulnerabilities_in_ast()
 
     # run tests
-    # tester = TestInfo(local_repo_path)
-    # tester.runToxTest()
+    tester = TestInfo(local_repo_path)
+
+    try:
+        tester.runToxTest()
+    except:
+        print("An error occured while executing tests")
+
+    print("Tests done")
+    test_results = tester.getTestLog()
 
 
-    report = Report(vulnerable_functions, vulnerable_imports, [], outdated_dependencies, [], replace)
+    report = Report(vulnerable_functions, vulnerable_imports, test_results, outdated_dependencies, [], replace)
 
     # automatically create pull request
     if push and (len(vulnerable_functions) > 0 or len(vulnerable_imports) > 0):

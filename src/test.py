@@ -24,6 +24,7 @@ import logging
 from pkg_resources import parse_version
 from pythonjsonlogger import jsonlogger
 import json
+import subprocess
 
 class TestInfo:
     # TODO:Setup logging. too. lazy. :(
@@ -132,9 +133,15 @@ class TestInfo:
         config.readfp(open('tox_template.ini'))
         envString = ", ".join(self.supportedPythons)
         config.set('tox','envlist',envString)
-        depString = "\n"+"-r"+self.mergedRequirementsFile+"\n-c"+self.constraintsFile
+        depString = ''
+
+        if self.constraintsFile:
+            depString = "\n"+"-r"+self.mergedRequirementsFile+"\n-c"+self.constraintsFile
+        else:
+            depString = "\n"+"-r"+self.mergedRequirementsFile+"\n"
+
         config.set('testenv','deps',depString)
-        with open(os.path.join(self.path,'tox.ini'),'wb') as configfile:
+        with open(os.path.join(self.path,'tox.ini'),'w') as configfile:
             config.write(configfile)
 
 
@@ -164,7 +171,8 @@ class TestInfo:
         os.chdir(self.path)
         import tox.session
         print('Run tests')
-        tox.session.main(["--result-json=bugrevelio.json"])
+        # tox.session.main(["--result-json=bugrevelio.json"])
+        subprocess.call(["tox", "--result-json=bugrevelio.json"])
         #tox.cmdline()
 
     def merge_files(self, files):
@@ -240,7 +248,7 @@ class TestInfo:
         return base_dict
 
     def getTestLog(self):
-        json_data=open(self.path+'bugrevelio.json')
+        json_data=open(self.path+'/bugrevelio.json')
         data = json.load(json_data)
         json_data.close()
 
