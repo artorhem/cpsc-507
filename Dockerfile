@@ -2,7 +2,10 @@ FROM python
 
 COPY ./src /
 ADD requirements.txt /
+ADD scripts/repos.txt repos.txt
+ADD scripts/execute-analysis.sh execute-analysis.sh 
 
 RUN pip install -r requirements.txt
+RUN chmod +x execute-analysis.sh 
 
-CMD python /cli.py --url 'https://github.com/ferencberes/tox-example'
+CMD ./execute-analysis.sh
