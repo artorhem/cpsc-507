@@ -254,4 +254,21 @@ class TestInfo:
 
         return data
 
+    def get_test_metrics(self):
+        log_data = self.getTestLog()
 
+        succeeded_tests = 0
+        failed_tests = 0
+
+        for test_environment in self.tests['testenvs']:
+            if 'test' in test_environment and len(test_environment['test']) > 0:
+                for executed_test in test_environment['test']:
+                    if executed_test['retcode'] == 0:
+                        succeeded_tests += 1
+                    else:
+                        failed_tests += 1
+
+        return {
+            'succeeded_tests': succeeded_tests,
+            'failed_tests': failed_tests
+        }

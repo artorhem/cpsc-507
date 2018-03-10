@@ -82,24 +82,38 @@ def main(url, path, replace, push, html):
     if updater:
         outdated_dependencies = updater.outdated_dependencies
 
+    # run tests
+    pre_tester = TestInfo(local_repo_path)
+
+    try:
+        pre_tester.runToxTest()
+    except:
+        print("An error occured while executing tests")
+
+    print("Tests done")
+    pre_test_results = pre_tester.getTestLog()
+    test_metrics_before = pre_tester.get_test_metrics()
+
+    post_test_metrics = {}
+    post_test_results = {}
+
     if replace:
         # automatically replace detected vulnerabilities if available
         print("Replace detected vulnerabilities")
         vulnerability_analyzer.replace_vulnerabilities_in_ast()
 
-    # run tests
-    tester = TestInfo(local_repo_path)
+        # run tests
+        post_tester = TestInfo(local_repo_path)
 
-    try:
-        tester.runToxTest()
-    except:
-        print("An error occured while executing tests")
+        try:
+            post_tester.runToxTest()
+            post_test_results = post_tester.getTestLog()
+            post_test_metrics = post_tester.get_test_metrics()
+        except:
+            print("An error occured while executing tests")
 
-    print("Tests done")
-    test_results = tester.getTestLog()
 
-
-    report = Report(vulnerable_functions, vulnerable_imports, test_results, outdated_dependencies, [], replace)
+    report = Report(vulnerable_functions, vulnerable_imports, pre_test_results, post_test_results, outdated_dependencies, [], replace)
 
     # automatically create pull request
     if push and (len(vulnerable_functions) > 0 or len(vulnerable_imports) > 0):
@@ -120,10 +134,11 @@ def main(url, path, replace, push, html):
 
     if url:
         # collect relevant metrics
-        # todo: test metrics
         repo_metrics = gh_handler.get_repository_metrics()
         vulnerability_metrics = vulnerability_analyzer.get_vulnerability_metrics()
         repo_metrics.update(vulnerability_metrics)
+        repo_metrics.update(test_metrics_before)
+        repo_metrics.update(post_test_metrics)
 
         logger.info(url, extra=repo_metrics)
 

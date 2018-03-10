@@ -6,7 +6,7 @@ class Report:
     def __init__(self,
                  detected_vulnerable_functions,
                  detected_vulnerable_imports,
-                 tests, outdated_dependencies, updates, replace):
+                 pre_tests, post_tests, outdated_dependencies, updates, replace):
         """
         Creates a new report instance.
         :param detected_vulnerabilities: vulnerabilities that have been detected in the analysis
@@ -17,7 +17,7 @@ class Report:
         init()  # initialize coloring
         self.detected_vulnerable_functions = detected_vulnerable_functions
         self.detected_vulnerable_imports = detected_vulnerable_imports
-        self.tests = tests
+        self.pre_tests = pre_tests
         self.outdated_dependencies = outdated_dependencies
         self.updates = updates
         self.replace = replace
@@ -36,8 +36,6 @@ class Report:
         line('style', custom_style)
         line('h1', 'Analysis Report')
         line('h2', 'Detected vulnerable functions')
-
-        # todo: style file
 
         with tag('div', id='vulnerabilities'):
             for vulnerability in self.detected_vulnerable_functions:
@@ -118,24 +116,35 @@ class Report:
 
         report = 'Detected vulnerable functions: \n' + vulnerable_functions_print
 
-        tests_found = False
+        pre_tests_found = False
 
-        for test_environment in self.tests['testenvs']:
+        for environment_key, test_environment in self.pre_tests['testenvs'].items():
             if 'test' in test_environment and len(test_environment['test']) > 0:
                 tests_found = True
 
                 tests_print += 'Executed tests using Python ' + test_environment['python']['version'] + '\n'
 
-                for executed_test in test_environment['test']:
-                    if executed_test['retcode'] == 0:
-                        tests_print += Fore.GREEN + 'Success ' + Style.RESET_ALL + '- ' + executed_test['output'] + '\n'
+                for executed_pre_test in test_environment['test']:
+                    if executed_pre_test['retcode'] == 0:
+                        tests_print += Fore.GREEN + 'Success ' + Style.RESET_ALL + '(before) - ' + executed_pre_test['output'] + '\n'
                     else:
-                        tests_print += Fore.Red + 'Fail ' + Style.RESET_ALL + '- ' + executed_test['output'] + '\n'
+                        tests_print += Fore.Red + 'Fail ' + Style.RESET_ALL + '(before) - ' + executed_pre_test['output'] + '\n'
 
-        if not tests_found:
+                    for executed_post_test in self.post_tests['testenvs'][environment_key]:
+                        if executed_post_test['command'] == executed_pre_test['command']:
+                            if executed_post_test['retcode'] == 0:
+                                tests_print += Fore.GREEN + ' Success ' + Style.RESET_ALL + '(after) - ' + executed_post_test['output'] + '\n\n'
+                            else:
+                                tests_print += Fore.Red + ' Fail ' + Style.RESET_ALL + '(after) - ' + executed_post_test['output'] + '\n\n'
+                        else:
+                            tests_print += Fore.Red + ' Fail ' + Style.RESET_ALL + '(after) - Error executing test'
+
+
+
+        if not pre_tests_found:
             tests_print = 'No tests found or tests could not be executed\n'
 
-        report += 'Executed Tests: \n' + tests_print  # todo
+        report += 'Executed Tests: \n' + tests_print
 
         for dependency in self.outdated_dependencies:
             outdated_print += '\t \033[1m' + dependency.name + '\033[0m installed: ' + dependency.version + ', latest: ' + dependency.all_versions[-1] + '\n'
