@@ -203,10 +203,35 @@ class Report:
 
         report += '# Test Report \n'
 
-        if len(self.tests) > 0:
-            report += '[todo]'
-        else:
-            report += 'No tests detected.'
+        pre_tests_found = False
+
+        for environment_key, test_environment in self.pre_tests['testenvs'].items():
+            if 'test' in test_environment and len(test_environment['test']) > 0:
+                tests_found = True
+
+                tests_print += 'Executed tests using Python ' + test_environment['python']['version'] + '\n'
+
+                for executed_pre_test in test_environment['test']:
+                    if executed_pre_test['retcode'] == 0:
+                        tests_print += '** ✔ Success** (before) - ' + executed_pre_test['output'] + '\n'
+                    else:
+                        tests_print += '**✘ Fail** (before) - ' + executed_pre_test['output'] + '\n'
+
+                    for executed_post_test in self.post_tests['testenvs'][environment_key]:
+                        if executed_post_test['command'] == executed_pre_test['command']:
+                            if executed_post_test['retcode'] == 0:
+                                tests_print +='** ✔ Success** (after) - ' + executed_post_test['output'] + '\n\n'
+                            else:
+                                tests_print += '**✘ Fail** (after) - ' + executed_post_test['output'] + '\n\n'
+                        else:
+                            tests_print += '**✘ Fail** (after) - Error executing test'
+
+
+
+        if not pre_tests_found:
+            tests_print = 'No tests found or tests could not be executed\n'
+
+        report += 'Executed Tests: \n' + tests_print
 
         report += ' \n \n --- \n \n'
         report += 'This tool was developed as part of a Software Engineering course. '
