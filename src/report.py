@@ -41,15 +41,20 @@ class Report:
 
         with tag('div', id='vulnerabilities'):
             for vulnerability in self.detected_vulnerable_functions:
-                with tag('div', klass='bs-callout bs-callout-danger'):
+                severity_class = 'bs-callout-danger'
+
+                if vulnerability.severity == 'warning':
+                    severity_class = 'bs-callout-warning'
+
+                with tag('div', klass='bs-callout ' + severity_class):
                     line('h4', vulnerability.name)
 
                     text('Detected vulnerability: ')
-                    line('code',  vulnerability.name)
+                    line('code', vulnerability.name)
                     doc.stag('br')
 
                     text('Location: ')
-                    line('i',  vulnerability.file)
+                    line('i', vulnerability.file)
                     doc.stag('br')
 
                     if vulnerability.import_location:
@@ -60,12 +65,12 @@ class Report:
                     text('Vulnerability reason: ' + vulnerability.reason)
                     doc.stag('br')
                     text('Suggested replacement: ')
-                    line('code',  vulnerability.update)
+                    line('code', vulnerability.update)
                     doc.stag('br')
 
                     if self.replace:
                         text('Automatically replaced with: ')
-                        line('code',  vulnerability.update)
+                        line('code', vulnerability.update)
 
         line('h2', 'Outdated Dependencies')
 
@@ -80,7 +85,7 @@ class Report:
         file = open(output_path, 'w')
         file.write(result)
         file.close()
-        print 'Wrote HTML report: ' + output_path
+        print('Wrote HTML report: ' + output_path)
 
     def plain_text_report(self):
         """
@@ -104,6 +109,7 @@ class Report:
             vulnerability_entry += '\t Detected vulnerability: ' + Back.RED + vulnerability.name + Style.RESET_ALL + '\n'
             vulnerability_entry += '\t Vulnerability reason: ' + vulnerability.reason + '\n'
             vulnerability_entry += '\t Suggested replacements: ' + vulnerability.update + '\n'
+            vulnerability_entry += '\t Severity: ' + vulnerability.severity + '\n'
 
             if self.replace:
                 vulnerability_entry += '\t Automatically replaced with: ' + vulnerability.update + '\n\n'
@@ -111,6 +117,24 @@ class Report:
             vulnerable_functions_print += vulnerability_entry + '\n\n'
 
         report = 'Detected vulnerable functions: \n' + vulnerable_functions_print
+
+        tests_found = False
+
+        for test_environment in self.tests['testenvs']:
+            if 'test' in test_environment and len(test_environment['test']) > 0:
+                tests_found = True
+
+                tests_print += 'Executed tests using Python ' + test_environment['python']['version'] + '\n'
+
+                for executed_test in test_environment['test']:
+                    if executed_test['retcode'] == 0:
+                        tests_print += Fore.GREEN + 'Success ' + Style.RESET_ALL + '- ' + executed_test['output'] + '\n'
+                    else:
+                        tests_print += Fore.Red + 'Fail ' + Style.RESET_ALL + '- ' + executed_test['output'] + '\n'
+
+        if not tests_found:
+            tests_print = 'No tests found or tests could not be executed\n'
+
         report += 'Executed Tests: \n' + tests_print  # todo
 
         for dependency in self.outdated_dependencies:
@@ -143,6 +167,7 @@ class Report:
                 vulnerability_entry += '* Reason: ' + vulnerability.reason + '\n'
 
             vulnerability_entry += '* Replacement: ' + vulnerability.update + '\n'
+            vulnerability_entry += '* Severity: ' + vulnerability.severity + '\n'
 
             vulnerable_functions_print += vulnerability_entry + '\n\n'
 

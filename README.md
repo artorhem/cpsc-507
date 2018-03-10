@@ -53,3 +53,16 @@ The space of Python testing is very fragmented, and there is not universal metho
 
 + The supported methods of testing the project are: setup.py with a test recipe, py.tests, nosetests, and plain old unittests.
 
+
+## Known issues and fixes
+
+When running `tox` in the macOS terminal the following error might ocurr:
+
+`unknown locale: UTF-8 in Python`
+
+Fix:
+
+```
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+```

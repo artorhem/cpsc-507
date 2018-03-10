@@ -1,5 +1,4 @@
-snakefood==1.4
-click==6.7
+findimports
 pygithub
 pip
 gitpython
@@ -9,3 +8,10 @@ colorama
 github3.py
 safety-db
 astor
+configparser
+tox
+pytest
+mock
+click==6.7
+compiler
+six
