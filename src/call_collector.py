@@ -53,18 +53,19 @@ class FunctionTransformer(ast.NodeTransformer):
         self.generic_visit(node)
         for vulnerability in self.detected_vulnerabilities:
             if vulnerability.line == node.lineno and vulnerability.column == node.col_offset:
-                replacement = ast.parse(vulnerability.update).body[0].value
+                if vulnerability.update:
+                    replacement = ast.parse(vulnerability.update).body[0].value
 
-                if isinstance(ast.parse(vulnerability.update).body[0], ast.Call):
-                    args = ast.parse(vulnerability.update).body[0].value.args
+                    if isinstance(ast.parse(vulnerability.update).body[0], ast.Call):
+                        args = ast.parse(vulnerability.update).body[0].value.args
 
-                    for i, arg in enumerate(args):
-                        if isinstance(arg, ast.Name) and arg.id.startswith('___'):
-                            arg_index = int(arg.id[3:])
-                            replacement.args[i] = node.args[arg_index]
+                        for i, arg in enumerate(args):
+                            if isinstance(arg, ast.Name) and arg.id.startswith('___'):
+                                arg_index = int(arg.id[3:])
+                                replacement.args[i] = node.args[arg_index]
 
-                ast.fix_missing_locations(replacement)
-                return replacement
+                    ast.fix_missing_locations(replacement)
+                    return replacement
 
         return node
 

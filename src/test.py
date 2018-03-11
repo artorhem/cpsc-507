@@ -25,6 +25,8 @@ from pkg_resources import parse_version
 from pythonjsonlogger import jsonlogger
 import json
 import subprocess
+import os.path
+
 
 class TestInfo:
     # TODO:Setup logging. too. lazy. :(
@@ -135,10 +137,11 @@ class TestInfo:
         config.set('tox','envlist',envString)
         depString = ''
 
+        if self.mergedRequirementsFile:
+            depString = "\n"+"-r"+self.mergedRequirementsFile
+
         if self.constraintsFile:
-            depString = "\n"+"-r"+self.mergedRequirementsFile+"\n-c"+self.constraintsFile
-        else:
-            depString = "\n"+"-r"+self.mergedRequirementsFile+"\n"
+            depString += "\n-c"+self.constraintsFile
 
         config.set('testenv','deps',depString)
         with open(os.path.join(self.path,'tox.ini'),'w') as configfile:
@@ -162,7 +165,7 @@ class TestInfo:
         else:
             #In the event we don't explicitly find a version list,
             #we force create one. Suck on that!
-            env = ['py27','py26','py32','py33','py35','py36']
+            env = ['py35','py27','py26','py32','py33','py36']
         
         return env
 
@@ -248,10 +251,33 @@ class TestInfo:
         return base_dict
 
     def getTestLog(self):
-        json_data=open(self.path+'/bugrevelio.json')
-        data = json.load(json_data)
-        json_data.close()
+        if os.path.exists(self.path+'/bugrevelio.json'):
+            json_data=open(self.path+'/bugrevelio.json')
+            data = json.load(json_data)
+            json_data.close()
 
-        return data
+            return data
+        else:
+            return {}
 
+    def get_test_metrics(self):
+        log_data = self.getTestLog()
 
+        succeeded_tests = 0
+        failed_tests = 0
+
+        if log_data == {}:
+            return {}
+
+        for test_environment in log_data['testenvs']:
+            if 'test' in test_environment and len(test_environment['test']) > 0:
+                for executed_test in test_environment['test']:
+                    if executed_test['retcode'] == 0:
+                        succeeded_tests += 1
+                    else:
+                        failed_tests += 1
+
+        return {
+            'succeeded_tests': succeeded_tests,
+            'failed_tests': failed_tests
+        }
