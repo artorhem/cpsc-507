@@ -9,7 +9,7 @@ github3.py
 safety-db
 astor
 configparser
-tox
+tox==3.0.0rc1
 pytest
 mock
 click==6.7

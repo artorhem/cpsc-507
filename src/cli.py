@@ -8,6 +8,7 @@ import logging
 from pythonjsonlogger import jsonlogger
 from test import TestInfo 
 import shutil
+import sys
 
 @click.command()
 @click.option('--url', help='URL to a github repository')
@@ -55,7 +56,7 @@ def main(url, path, replace, push, html):
     try:
         updater = Updater(local_repo_path)
     except:
-        print("Cannot update due to AST error")
+        print("Cannot update due to error")
 
 
     vulnerability_analyzer = VulnerabilityAnalyzer(local_repo_path)
@@ -68,7 +69,8 @@ def main(url, path, replace, push, html):
 
         if url:
             logger.info(url, extra={'analysis_failed': True})
-        return -1
+
+        sys.exit(1)
 
     vulnerable_functions = vulnerability_analyzer.detected_vulnerable_functions
     # todo: add to report and update
@@ -128,6 +130,8 @@ def main(url, path, replace, push, html):
                                 "master")
 
     print(report.plain_text_report())
+
+    print(report.pull_request_report())
 
     if html:
         report.html_report(html)

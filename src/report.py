@@ -18,6 +18,7 @@ class Report:
         self.detected_vulnerable_functions = detected_vulnerable_functions
         self.detected_vulnerable_imports = detected_vulnerable_imports
         self.pre_tests = pre_tests
+        self.post_tests = post_tests
         self.outdated_dependencies = outdated_dependencies
         self.updates = updates
         self.replace = replace
@@ -93,7 +94,7 @@ class Report:
         :return: report in formated plain text
         """
         vulnerable_functions_print = ''
-        tests_print = 'todo \n'  # todo
+        tests_print = ''
         updates_print = 'todo \n'  # todo
         outdated_print = ''
 
@@ -108,10 +109,13 @@ class Report:
 
             vulnerability_entry += '\t Detected vulnerability: ' + Back.RED + vulnerability.name + Style.RESET_ALL + '\n'
             vulnerability_entry += '\t Vulnerability reason: ' + vulnerability.reason + '\n'
-            vulnerability_entry += '\t Suggested replacements: ' + vulnerability.update + '\n'
+
+            if vulnerability.update:
+                vulnerability_entry += '\t Suggested replacements: ' + vulnerability.update + '\n'
+
             vulnerability_entry += '\t Severity: ' + vulnerability.severity + '\n'
 
-            if self.replace:
+            if self.replace and vulnerability.update:
                 vulnerability_entry += '\t Automatically replaced with: ' + vulnerability.update + '\n\n'
 
             vulnerable_functions_print += vulnerability_entry + '\n\n'
@@ -120,28 +124,27 @@ class Report:
 
         pre_tests_found = False
 
-        for environment_key, test_environment in self.pre_tests['testenvs'].items():
-            if 'test' in test_environment and len(test_environment['test']) > 0:
-                tests_found = True
+        if self.pre_tests != {}:
+            for environment_key, test_environment in self.pre_tests['testenvs'].items():
+                if 'test' in test_environment and len(test_environment['test']) > 0:
+                    tests_found = True
 
-                tests_print += 'Executed tests using Python ' + test_environment['python']['version'] + '\n'
+                    tests_print += 'Executed tests using Python ' + test_environment['python']['version'] + '\n'
 
-                for executed_pre_test in test_environment['test']:
-                    if executed_pre_test['retcode'] == 0:
-                        tests_print += Fore.GREEN + 'Success ' + Style.RESET_ALL + '(before) - ' + executed_pre_test['output'] + '\n'
-                    else:
-                        tests_print += Fore.Red + 'Fail ' + Style.RESET_ALL + '(before) - ' + executed_pre_test['output'] + '\n'
-
-                    for executed_post_test in self.post_tests['testenvs'][environment_key]:
-                        if executed_post_test['command'] == executed_pre_test['command']:
-                            if executed_post_test['retcode'] == 0:
-                                tests_print += Fore.GREEN + ' Success ' + Style.RESET_ALL + '(after) - ' + executed_post_test['output'] + '\n\n'
-                            else:
-                                tests_print += Fore.Red + ' Fail ' + Style.RESET_ALL + '(after) - ' + executed_post_test['output'] + '\n\n'
+                    for executed_pre_test in test_environment['test']:
+                        if executed_pre_test['retcode'] == 0:
+                            tests_print += Fore.GREEN + 'Success ' + Style.RESET_ALL + '(before) - ' + executed_pre_test['output'] + '\n'
                         else:
-                            tests_print += Fore.Red + ' Fail ' + Style.RESET_ALL + '(after) - Error executing test'
+                            tests_print += Fore.RED + 'Fail ' + Style.RESET_ALL + '(before) - ' + executed_pre_test['output'] + '\n'
 
-
+                        for executed_post_test in self.post_tests['testenvs'][environment_key]['test']:
+                            if executed_post_test['command'] == executed_pre_test['command']:
+                                if executed_post_test['retcode'] == 0:
+                                    tests_print += Fore.GREEN + ' Success ' + Style.RESET_ALL + '(after) - ' + executed_post_test['output'] + '\n\n'
+                                else:
+                                    tests_print += Fore.RED + ' Fail ' + Style.RESET_ALL + '(after) - ' + executed_post_test['output'] + '\n\n'
+                            else:
+                                tests_print += Fore.RED + ' Fail ' + Style.RESET_ALL + '(after) - Error executing test'
 
         if not pre_tests_found:
             tests_print = 'No tests found or tests could not be executed\n'
@@ -177,7 +180,9 @@ class Report:
             if vulnerability.reason != '':
                 vulnerability_entry += '* Reason: ' + vulnerability.reason + '\n'
 
-            vulnerability_entry += '* Replacement: ' + vulnerability.update + '\n'
+            if vulnerability.update:
+                vulnerability_entry += '* Replacement: ' + vulnerability.update + '\n'
+
             vulnerability_entry += '* Severity: ' + vulnerability.severity + '\n'
 
             vulnerable_functions_print += vulnerability_entry + '\n\n'
@@ -198,42 +203,45 @@ class Report:
             for imp_info in imp['info']:
                 vulnerability_entry += '|' + imp['name'] + '|' + imp_info['v'] + '|' + imp_info['advisory'].replace('\n', '').replace('\r', '') + '|\n'
 
-            vulnerable_imports_print += vulnerability_entry + '\n'
-            vulnerable_imports_print += 'Source: [Safety](https://github.com/pyupio/safety) \n\n'
+            vulnerable_imports_print += vulnerability_entry
 
         report += vulnerable_imports_print
+        report += 'Source: [Safety](https://github.com/pyupio/safety) \n\n'
 
         report += '# Test Report \n'
 
         pre_tests_found = False
 
-        for environment_key, test_environment in self.pre_tests['testenvs'].items():
-            if 'test' in test_environment and len(test_environment['test']) > 0:
-                tests_found = True
+        tests_print = ''
 
-                tests_print += 'Executed tests using Python ' + test_environment['python']['version'] + '\n'
+        if self.pre_tests != {}:
+            for environment_key, test_environment in self.pre_tests['testenvs'].items():
+                if 'test' in test_environment and len(test_environment['test']) > 0:
+                    tests_found = True
 
-                for executed_pre_test in test_environment['test']:
-                    if executed_pre_test['retcode'] == 0:
-                        tests_print += '** ✔ Success** (before) - ' + executed_pre_test['output'] + '\n'
-                    else:
-                        tests_print += '**✘ Fail** (before) - ' + executed_pre_test['output'] + '\n'
+                    tests_print += 'Executed tests using Python ' + test_environment['python']['version'] + '\n'
 
-                    for executed_post_test in self.post_tests['testenvs'][environment_key]:
-                        if executed_post_test['command'] == executed_pre_test['command']:
-                            if executed_post_test['retcode'] == 0:
-                                tests_print +='** ✔ Success** (after) - ' + executed_post_test['output'] + '\n\n'
-                            else:
-                                tests_print += '**✘ Fail** (after) - ' + executed_post_test['output'] + '\n\n'
+                    for executed_pre_test in test_environment['test']:
+                        if executed_pre_test['retcode'] == 0:
+                            tests_print += '** ✔ Success** (before) - ' + executed_pre_test['output'] + '\n'
                         else:
-                            tests_print += '**✘ Fail** (after) - Error executing test'
+                            tests_print += '**✘ Fail** (before) - ' + executed_pre_test['output'] + '\n'
+
+                        for executed_post_test in self.post_tests['testenvs'][environment_key]['test']:
+                            if executed_post_test['command'] == executed_pre_test['command']:
+                                if executed_post_test['retcode'] == 0:
+                                    tests_print +='** ✔ Success** (after) - ' + executed_post_test['output'] + '\n\n'
+                                else:
+                                    tests_print += '**✘ Fail** (after) - ' + executed_post_test['output'] + '\n\n'
+                            else:
+                                tests_print += '**✘ Fail** (after) - Error executing test'
 
 
 
         if not pre_tests_found:
             tests_print = 'No tests found or tests could not be executed\n'
 
-        report += 'Executed Tests: \n' + tests_print
+        report += tests_print
 
         report += ' \n \n --- \n \n'
         report += 'This tool was developed as part of a Software Engineering course. '
