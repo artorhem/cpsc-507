@@ -61,6 +61,8 @@ def plugin_loaded():
     Pref = Pref()
     Pref.load()
 
+    VulnerabilityHighlightListener().highlight_occurences(sublime.active_window().active_view())
+
     settings.add_on_change('reload', lambda: Pref.load())
     settings_base.add_on_change('VulnerabilityHighlight-reload', lambda: Pref.load())
     if Pref.highlight_when_selection_is_empty and not 'running_wh_loop' in globals():
