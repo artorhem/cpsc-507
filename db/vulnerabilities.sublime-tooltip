@@ -1,0 +1,49 @@
+{
+      "hashlib.md5":
+      {
+        "safe": 0,
+        "type": "hash",
+        "update_with": "hashlib.sha512",
+        "reason": "Successful collision and preimage attacks were shown"
+      },
+      "hashlib.sha1":
+      {
+        "safe": 0,
+        "type": "hash",
+        "update_with": "hashlib.sha512",
+        "reason": "Successful collision attacks were shown"
+      },
+      "Crypto.Hash.MD5":
+      {
+        "safe": 0,
+        "type": "hash",
+        "update_with": "Crypto.Hash.SHA512",
+        "reason": "Successful collision attacks were shown"
+      },
+      "Crypto.Hash.SHA":
+      {
+        "safe": 0,
+        "type": "hash",
+        "update_with": "Crypto.Hash.SHA512",
+        "reason": "Successful collision attacks were shown"
+      },
+      "cryptography.hazmat.primitives.hashes.MD5":
+      {
+        "safe": 0,
+        "type": "hash",
+        "update_with": "cryptography.hazmat.primitives.hashes.SHA512",
+        "reason": "Successful collision and preimage attacks were shown"
+      },
+      "Crypto.Cipher.Blowfish": {
+        "safe": 0,
+        "type": "encryption",
+        "update_with": "Crypto.Cipher.AES",
+        "reason": "Vulnerable to birthday attacks and known-plaintext attaks"
+      },
+      "Crypto.Cipher.ARC4":{
+        "safe": 0,
+        "type": "encryption",
+        "update_with": "Crypto.Cipher.AES",
+        "reason": "Vulnerable to bit-flipping, stream cipher attack, and others"
+      }
+}
