@@ -15,13 +15,10 @@ import sublime_plugin
 Pref = {}
 settings_base = {}
 
-relative_path = os.path.join(os.path.join(sublime.packages_path(), 'cpsc-507'), 'db')
-json_file = os.path.join(relative_path, 'vulnerabilities.sublime-tooltip')
-data = json.load(open(json_file))
-vulnerabilities = list(data.keys())
 
 
 def plugin_loaded():
+
     global settings_base
     global Pref
 
@@ -53,6 +50,13 @@ def plugin_loaded():
             Pref.prev_selections = None
             Pref.prev_regions = None
             Pref.select_next_word_skiped = 0
+
+            relative_path = os.path.join(os.path.join(sublime.packages_path(), 'cpsc-507'), 'db')
+            json_file = os.path.join(relative_path, 'vulnerabilities.sublime-tooltip')
+            data = json.load(open(json_file))
+
+            Pref.vulnerabilities = list(data.keys())
+
 
     Pref = Pref()
     Pref.load()
@@ -146,7 +150,7 @@ class VulnerabilityHighlightListener(sublime_plugin.EventListener):
         regions = []
         occurrencesMessage = []
         occurrencesCount = 0
-        for string in vulnerabilities:
+        for string in Pref.vulnerabilities:
             last_element = string.split('.')[-1]
             regions.extend(view.find_all(last_element))
             print('regions', regions)
@@ -161,4 +165,3 @@ class VulnerabilityHighlightListener(sublime_plugin.EventListener):
             else:
                 view.erase_status("VulnerabilityHighlight")
             Pref.prev_regions = regions
-
