@@ -1,0 +1,14 @@
+[
+    {
+        "keys": ["super+shift+v"],
+        "command": "replace_vulnerability"
+    },
+    {
+        "keys": ["super+shift+a"],
+        "command": "replace_all_vulnerabilities"
+    },
+    {
+        "keys": ["super+shift+s"],
+        "command": "replace_similar_vulnerabilities"
+    }
+]

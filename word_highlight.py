@@ -50,12 +50,12 @@ def plugin_loaded():
             Pref.prev_selections = None
             Pref.prev_regions = None
             Pref.select_next_word_skiped = 0
-
+            Pref.prev_critical_regions = None
             relative_path = os.path.join(os.path.join(sublime.packages_path(), 'cpsc-507'), 'db')
             json_file = os.path.join(relative_path, 'vulnerabilities.sublime-tooltip')
             data = json.load(open(json_file))
 
-            Pref.vulnerabilities = list(data.keys())
+            Pref.vulnerabilities = data
 
 
     Pref = Pref()
@@ -97,6 +97,7 @@ class set_word_highlight_enabled(sublime_plugin.ApplicationCommand):
         Pref.enabled = not Pref.enabled
         if not Pref.enabled:
             sublime.active_window().active_view().erase_regions("VulnerabilityHighlight")
+            sublime.active_window().active_view().erase_regions("VulnerabilityHighlightCritical")
         else:
             VulnerabilityHighlightListener().highlight_occurences(sublime.active_window().active_view())
 
@@ -111,6 +112,59 @@ class VulnerabilityHighlightClickCommand(sublime_plugin.TextCommand):
         if Pref.enabled and not view.settings().get('is_widget'):
             VulnerabilityHighlightListener().highlight_occurences(view)
 
+class ReplaceVulnerabilityCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        view = self.view
+        sel = view.sel()
+        word_region = view.word(sel[0])
+        word = view.substr(word_region)
+        for string, metadata in Pref.vulnerabilities.items():
+            last_element = string.split('.')[-1]
+            if last_element == word:
+                if not metadata["update_with"]:
+                    break
+                update_element = metadata["update_with"].split('.')[-1]
+                print(metadata["update_with"].split('.'))
+                print(metadata["update_with"].split('.')[-1])
+                print('update element', update_element)
+                view.replace(edit, word_region, update_element)
+                break
+
+class ReplaceSimilarVulnerabilitiesCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        view = self.view
+        sel = view.sel()
+        word_region = view.word(sel[0])
+        word = view.substr(word_region)
+        regions = view.find_all(word)
+        for string, metadata in Pref.vulnerabilities.items():
+            last_element = string.split('.')[-1]
+            if last_element == word:
+                if not metadata["update_with"]:
+                    break
+                update_element = metadata["update_with"].split('.')[-1]
+                while regions:
+                    print(regions)
+                    region = regions[0]
+                    view.replace(edit, region, update_element)
+                    regions = view.find_all(word)
+
+class ReplaceAllVulnerabilitiesCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        view = self.view
+        shift = 0
+        for string, metadata in Pref.vulnerabilities.items():
+            last_element = string.split('.')[-1]
+            current_regions = view.find_all(last_element)
+            if not metadata["update_with"]:
+                continue
+            update_element = metadata["update_with"].split('.')[-1]
+            while current_regions:
+                region = current_regions[0]
+                view.replace(edit, region, update_element)
+                current_regions = view.find_all(last_element)
+
+
 
 class VulnerabilityHighlightListener(sublime_plugin.EventListener):
     def on_activated(self, view):
@@ -120,6 +174,7 @@ class VulnerabilityHighlightListener(sublime_plugin.EventListener):
             Pref.word_separators = view.settings().get('word_separators') or settings_base.get('word_separators')
             if not Pref.enabled:
                 view.erase_regions("VulnerabilityHighlight")
+                view.erase_regions("VulnerabilityHighlightCritical")
 
     def on_selection_modified(self, view):
         if view and Pref.enabled and not view.settings().get('is_widget'):
@@ -133,9 +188,7 @@ class VulnerabilityHighlightListener(sublime_plugin.EventListener):
     def set_status(self, view, message):
         if Pref.show_status_bar_message:
             view.set_status("VulnerabilityHighlight", message)
-
     def highlight_occurences(self, view):
-        # todo: The list cast below can go away when Sublime 3's Selection class implements __str__
         prev_selections = str(list(view.sel()))
         if Pref.prev_selections == prev_selections:
             return
@@ -152,18 +205,26 @@ class VulnerabilityHighlightListener(sublime_plugin.EventListener):
         regions = []
         occurrencesMessage = []
         occurrencesCount = 0
-        for string in Pref.vulnerabilities:
+        critical_regions = []
+        for string, metadata in Pref.vulnerabilities.items():
             last_element = string.split('.')[-1]
-            regions.extend(view.find_all(last_element))
-            print('regions', regions)
+            current_regions = view.find_all(last_element)
+            if metadata["severity"] == "critical":
+                critical_regions.extend(current_regions)
+            else:
+                regions.extend(current_regions)
         if Pref.prev_regions != regions:
             view.erase_regions("VulnerabilityHighlight")
             if regions:
-                view.add_regions('VulnerabilityHighlight', regions, 'invalid', '', sublime.DRAW_NO_FILL)
-                # view.add_regions("VulnerabilityHighlight", regions, Pref.color_scope_name, Pref.icon_type_on_gutter if Pref.mark_occurrences_on_gutter else "", sublime.DRAW_SOLID_UNDERLINE)
-
-                self.set_status(view, ", ".join(list(set(occurrencesMessage))) + (
-                    ' found on a limited portion of the document ' if limited_size else ''))
+                view.add_regions('VulnerabilityHighlight', regions, 'warning', '', sublime.DRAW_NO_FILL)
             else:
                 view.erase_status("VulnerabilityHighlight")
-            Pref.prev_regions = regions
+        Pref.prev_regions = regions
+        if Pref.prev_critical_regions != critical_regions:
+            view.erase_regions("VulnerabilityHighlightCritical")
+            if critical_regions:
+                view.add_regions('VulnerabilityHighlightCritical', critical_regions, 'invalid', '', sublime.DRAW_NO_FILL)
+                    # view.add_regions("VulnerabilityHighlight", regions, Pref.color_scope_name, Pref.icon_type_on_gutter if Pref.mark_occurrences_on_gutter else "", sublime.DRAW_SOLID_UNDERLINE)
+            else:
+                view.erase_status("VulnerabilityHighlightCritical")
+        Pref.prev_critical_regions = critical_regions

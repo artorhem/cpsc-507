@@ -20,28 +20,10 @@ class Utilities():
 
     @staticmethod
     def result_format(json, keyorder, link, style, location="", file_name=""):
-        message = ""
-
-        if keyorder:
-            try:
-                # the output of sorted function is an ordered list of tuples
-                ordered_result = sorted(json.items(), key=lambda i: keyorder.index(i[0]))
-                # print("ordered_result: " + str(ordered_result))
-            except Exception as e:
-                print(e)
-                ordered_result = []
-            message = Utilities.get_html_from_list(ordered_result, style)
-        else:
-            message = Utilities.get_html_from_dictionary(json)
+        # del json['severity']
+        message = Utilities.get_html_from_dictionary(json)
             # add helper link if there is one
             # message += '<a style="color: white;" href=\"%s\">See more</a>' % link
-        message += '<a href=\"%s\" style=\"%s\">Update</a>' % (link, style['link'])
-        if location and file_name:
-            row = location[0]
-            col = location[1]
-            # message += '<br><a style="color: white;" href=\"%s\">Go To Document</a>' % (file_name + '$$$' + str(row) + ',' + str(col))
-            message += '<br><a href=\"%s\" style=\"%s\">Go To Document</a>' % (
-                (file_name + '$$$' + str(row) + ',' + str(col)), style['link'])
         return message
 
     @staticmethod
@@ -277,50 +259,6 @@ class ToolTipHelperCommand(sublime_plugin.TextCommand):
         json_file = os.path.join(relative_path, 'vulnerabilities.sublime-tooltip')
         json_result = self.search_in_json(sel, json_file)
         return json_result
-
-    def search_for_dynamic_doc(self, sel, scope):
-        results = sublime.active_window().lookup_symbol_in_index(sel)
-        if not results:
-            return []
-        try:
-            jsons = []
-            count = 0
-            for result in results:
-                # get file path
-                file_name = result[0]
-                splited_file_name = file_name.split('/')
-                if len(splited_file_name) <= 1:
-                    continue
-                # in case we have a broken path
-                if ':' not in splited_file_name[1]:
-                    file_name = self.fix_broken_path(splited_file_name)
-                # get the file extension
-                filename, file_extension = os.path.splitext(file_name)
-                # in case the scope is not valid
-                if file_extension not in scope:
-                    continue
-                # get row number
-                row = result[2][0]
-                content = self.get_file_content(file_name)
-                has_location, location = self.get_doc_location(content, row)
-                if not has_location:
-                    msg = 'Problem in %s. check if <doc></doc> tag is exist.' % (
-                        '\"' + str(result[1]) + "\" file in location " + str(result[2]))
-                    self.logger_msg += msg + "\nThe content of dynamic doc must be between the the open\close tags in new lines. If you continue a new line of some parameter, remember to remove \':\' from the line."
-                    continue
-                json_result = self.get_doc_content_by_location(content, location)
-                if json_result:
-                    loc = (result[2][0], result[2][1])
-                    jsons.append({"file_name": file_name, "json_result": json_result, "location": loc})
-                keys = list(json_result.keys())
-                # add key to keyorder and count the change
-                count += self.update_keyorder_list(keys)
-            # if there is one change, save it in settings.
-            if count != 0:
-                self.save_keyorder_list()
-            return jsons
-        except Exception:
-            return []
 
     def get_doc_location(self, content, row):
         """ get location of doc - start row & end row """
