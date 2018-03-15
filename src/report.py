@@ -206,7 +206,7 @@ class Report:
             vulnerable_imports_print += vulnerability_entry
 
         report += vulnerable_imports_print
-        report += 'Source: [Safety](https://github.com/pyupio/safety) \n\n'
+        report += '\n Source: [Safety](https://github.com/pyupio/safety) \n\n'
 
         report += '# Test Report \n'
 
@@ -236,8 +236,6 @@ class Report:
                             else:
                                 tests_print += '**✘ Fail** (after) - Error executing test'
 
-
-
         if not pre_tests_found:
             tests_print = 'No tests found or tests could not be executed\n'
 
@@ -245,7 +243,7 @@ class Report:
 
         report += ' \n \n --- \n \n'
         report += 'This tool was developed as part of a Software Engineering course. '
-        report += 'The intention is to make project maintainers aware of potential vulnerabilities.'
+        report += 'The intention is to make project maintainers aware of potential vulnerabilities. '
         report += 'If you have feedback then please reply to this pull-request. Thank you!'
 
         return report

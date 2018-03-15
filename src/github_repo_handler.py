@@ -121,7 +121,7 @@ class GithubRepoHandler:
             self.local_repo.git.add(u=True)
             self.local_repo.index.commit('Replaced vulnerable functions and outdated dependencies')
 
-            # push to remote
+            push to remote
             remote.push(refspec='master')
 
             # bug in GitPython which prevents using create_pull

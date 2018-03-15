@@ -10,7 +10,6 @@ import ast
 from collections import deque
 import astor
 
-
 class FuncCallVisitor(ast.NodeVisitor):
     def __init__(self):
         self._name = deque()
@@ -35,6 +34,9 @@ class FuncCallVisitor(ast.NodeVisitor):
 
 
 def get_func_calls(tree):
+    """
+    Returns all function calls in the Python AST.
+    """
     func_calls = []
     for node in ast.walk(tree):
         if isinstance(node, ast.Call):
@@ -50,6 +52,10 @@ class FunctionTransformer(ast.NodeTransformer):
         self.detected_vulnerabilities = detected_vulnerabilities
 
     def visit_Call(self, node):
+        """
+        Iterates through all function calls and replaces
+        those that are vulnerable.
+        """
         self.generic_visit(node)
         for vulnerability in self.detected_vulnerabilities:
             if vulnerability.line == node.lineno and vulnerability.column == node.col_offset:
@@ -71,4 +77,7 @@ class FunctionTransformer(ast.NodeTransformer):
 
 
 def replace_func_calls(tree, detected_vulnerabilities):
+    """
+    Replaces vulnerable function calls with safe alternatives.
+    """
     return astor.to_source(FunctionTransformer(detected_vulnerabilities).visit(tree))

@@ -32,7 +32,7 @@ def main(url, path, replace, push, html):
 
     # setup logging
     logger = logging.getLogger()
-    logHandler = logging.FileHandler('/tmp/metrics.json')
+    logHandler = logging.FileHandler('/home/metrics.json')
     logger.addHandler(logHandler)
     formatter = jsonlogger.JsonFormatter()
     logHandler.setFormatter(formatter)
@@ -73,33 +73,35 @@ def main(url, path, replace, push, html):
         sys.exit(1)
 
     vulnerable_functions = vulnerability_analyzer.detected_vulnerable_functions
-    # todo: add to report and update
     vulnerable_imports = vulnerability_analyzer.detected_vulnerable_imports
-    # todo: add to report and update
     vulnerable_installed_dependencies = vulnerability_analyzer.detected_vulnerable_installed_dependencies
-    # todo: add to report and update
 
     outdated_dependencies = []
 
     if updater:
         outdated_dependencies = updater.outdated_dependencies
 
-    # run tests
-    pre_tester = TestInfo(local_repo_path)
 
-    try:
-        pre_tester.runToxTest()
-    except:
-        print("An error occured while executing tests")
+    pre_test_results = {}
+    test_metrics_before = {}
 
-    print("Tests done")
-    pre_test_results = pre_tester.getTestLog()
-    test_metrics_before = pre_tester.get_test_metrics()
+    if len(vulnerable_functions) > 0:
+        run tests
+        pre_tester = TestInfo(local_repo_path)
+
+        try:
+            pre_tester.runToxTest()
+        except:
+            print("An error occured while executing tests")
+
+        print("Tests done")
+        pre_test_results = pre_tester.getTestLog()
+        test_metrics_before = pre_tester.get_test_metrics()
 
     post_test_metrics = {}
     post_test_results = {}
 
-    if replace:
+    if replace and len(vulnerable_functions) > 0:
         # automatically replace detected vulnerabilities if available
         print("Replace detected vulnerabilities")
         vulnerability_analyzer.replace_vulnerabilities_in_ast()
@@ -121,7 +123,6 @@ def main(url, path, replace, push, html):
     if push and (len(vulnerable_functions) > 0 or len(vulnerable_imports) > 0):
         print("Create pull-request")
 
-        # todo: include report in pull-request
         gh_handler.push_updates("bugrevelio@byom.de",
                                 "bugrevelio",
                                 "Vulnerabilities",
@@ -130,8 +131,6 @@ def main(url, path, replace, push, html):
                                 "master")
 
     print(report.plain_text_report())
-
-    print(report.pull_request_report())
 
     if html:
         report.html_report(html)

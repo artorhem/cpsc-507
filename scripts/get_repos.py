@@ -7,20 +7,24 @@ from github import Github
 import random
 import os
 
-MAX_REPOS = 200
+MAX_REPOS = 1000
 SELECTION_PROP = 0.1
 
 def main():
     g = Github(os.environ['GITHUB_USER'], os.environ['GITHUB_PASSWORD'])
-    repos = g.search_repositories("pushed:>2015-03-07", language="Python")
+    repos = g.search_repositories("pushed:>2015-03-07,size:<5000", language="Python")
     selected_repos = []
+    count = 0
 
     for repo in repos:
         if len(selected_repos) >= MAX_REPOS:
             break
 
         # if random.uniform(0, 1) < SELECTION_PROP:
-        selected_repos.append(repo.html_url)
+        if count < 100 or count > 900:
+            selected_repos.append(repo.html_url)
+
+        count += 1
 
     print selected_repos
 
