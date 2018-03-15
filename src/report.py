@@ -73,14 +73,55 @@ class Report:
 
         line('h2', 'Outdated Dependencies')
 
-        # todo: tests
-
         for dependency in self.outdated_dependencies:
             with tag('div', klass='bs-callout bs-callout-warning'):
                 line('h4', dependency.name)
                 text('Installed: ' + dependency.version)
                 doc.stag('br')
                 text('Latest: ' + dependency.all_versions[-1])
+
+        line('h2', 'Tests')
+
+        pre_tests_found = False
+
+        if self.pre_tests != {}:
+            for environment_key, test_environment in self.pre_tests['testenvs'].items():
+                if 'test' in test_environment and len(test_environment['test']) > 0:
+                    tests_found = True
+
+                    line('h3', 'Executed tests using Python ' + test_environment['python']['version'])
+
+                    for executed_pre_test in test_environment['test']:
+                        if executed_pre_test['retcode'] == 0:
+                            with tag('div', klass='bs-callout bs-callout-success'):
+                                line('h4', 'Success (before)')
+
+                                text(executed_pre_test['output'])
+                        else:
+                            with tag('div', klass='bs-callout bs-callout-danger'):
+                                line('h4', 'Fail (before)')
+
+                                text(executed_pre_test['output'])
+                        for executed_post_test in self.post_tests['testenvs'][environment_key]['test']:
+                            if executed_post_test['command'] == executed_pre_test['command']:
+                                if executed_post_test['retcode'] == 0:
+                                    with tag('div', klass='bs-callout bs-callout-success'):
+                                        line('h4', 'Success (after)')
+
+                                        text(executed_pre_test['output'])
+                                else:
+                                    with tag('div', klass='bs-callout bs-callout-danger'):
+                                        line('h4', 'Fail (after)')
+
+                                        text(executed_pre_test['output'])
+                            else:
+                                with tag('div', klass='bs-callout bs-callout-danger'):
+                                        line('h4', 'Fail (after)')
+
+                                        text('Error executing test')
+
+        if not pre_tests_found:
+            text('No tests found or tests could not be executed')
 
         result = doc.getvalue()
         file = open(output_path, 'w')
@@ -101,8 +142,6 @@ class Report:
         for vulnerability in self.detected_vulnerable_functions:
             vulnerability_entry = vulnerability.file + ':' + str(vulnerability.line) + ':' + str(
                 vulnerability.column) + '\n'
-            # todo get source context
-            # vulnerability_entry += '\t' + vulnerability.line + ' | ' + '\n'
 
             if vulnerability.import_location:
                 vulnerability_entry += '\t Import: ' + str(vulnerability.import_location.line) + ':' + str(vulnerability.import_location.column) + ':' + vulnerability.import_location.name + '\n'
