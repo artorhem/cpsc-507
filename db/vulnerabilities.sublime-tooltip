@@ -1,0 +1,135 @@
+{
+    "hashlib.md5":
+    {
+      "severity": "critical",
+      "type": "hash",
+      "update_with": "hashlib.sha512",
+      "reason": "Can be cracked by brute-force attack and suffers from extensive vulnerabilities."
+    },
+    "hashlib.sha1":
+    {
+      "severity": "critical",
+      "type": "hash",
+      "update_with": "hashlib.sha512",
+      "reason": "Attacks can find collisions in the full version of SHA-1."
+    },
+    "Crypto.Hash.MD5":
+    {
+      "severity": "critical",
+      "type": "hash",
+      "update_with": "Crypto.Hash.SHA512",
+      "reason": "Can be cracked by brute-force attack and suffers from extensive vulnerabilities."
+    },
+    "Crypto.Hash.SHA":
+    {
+      "severity": "critical",
+      "type": "hash",
+      "update_with": "Crypto.Hash.SHA512",
+      "reason": "Attacks can find collisions in the full version of SHA-1."
+    },
+    "Crypto.Hash.SHA.new":
+    {
+      "severity": "critical",
+      "type": "hash",
+      "update_with": "Crypto.Hash.SHA512.new()",
+      "reason": "Attacks can find collisions in the full version of SHA-1."
+    },
+    "cryptography.hazmat.primitives.hashes.MD5":
+    {
+      "severity": "critical",
+      "type": "hash",
+      "update_with": "cryptography.hazmat.primitives.hashes.SHA512",
+      "reason": "Can be cracked by brute-force attack and suffers from extensive vulnerabilities."
+    },
+    "cryptography.hazmat.primitives.hashes.SHA1":
+    {
+      "severity": "critical",
+      "type": "hash",
+      "update_with": "cryptography.hazmat.primitives.hashes.SHA512",
+      "reason": "Attacks can find collisions in the full version of SHA-1."
+    },
+    "Crypto.Cipher.Blowfish": {
+      "severity": "critical",
+      "type": "encryption",
+      "update_with": "Crypto.Cipher.AES",
+      "reason": "Vulnerable to birthday attacks."
+    },
+    "Crypto.Cipher.Blowfish.new": {
+      "severity": "critical",
+      "type": "encryption",
+      "update_with": "Crypto.Cipher.AES.new(___0, AES.MODE_CFB, ___2)",
+      "reason": "Vulnerable to birthday attacks."
+    },
+    "Crypto.Cipher.ARC4":{
+      "severity": "critical",
+      "type": "encryption",
+      "update_with": "Crypto.Cipher.AES",
+      "reason": "Vulnerable to many attacks."
+    },
+    "Crypto.Cipher.ARC4.new":{
+      "severity": "critical",
+      "type": "encryption",
+      "update_with": "Crypto.Cipher.AES.new(___0, AES.MODE_CFB, ___2)",
+      "reason": "Vulnerable to many attacks."
+    },
+    "yaml.load":{
+      "severity": "critical",
+      "type":"pickle",
+      "update_with": "yaml.safe_load(___0)",
+      "reason": "Untrusted input can result in arbitrary code execution."
+    },
+    "pickle.load":{
+      "severity": "warning",
+      "type":"pickle",
+      "update_with": null,
+      "reason": "Untrusted input can result in arbitrary code execution."
+    },
+    "cPickle.load":{
+      "severity": "warning",
+      "type":"pickle",
+      "update_with": null,
+      "reason": "Untrusted input can result in arbitrary code execution."
+    },
+    "pickle.loads":{
+      "severity": "warning",
+      "type":"pickle",
+      "update_with": null,
+      "reason": "Untrusted input can result in arbitrary code execution."
+    },
+    "cPickle.loads":{
+      "severity": "warning",
+      "type":"pickle",
+      "update_with": null,
+      "reason": "Untrusted input can result in arbitrary code execution."
+    },
+    "exec":{
+      "severity": "warning",
+      "type":"exec",
+      "update_with": null,
+      "reason": "Could execute vulnerable and untrusted code."
+    },
+    "execfile":{
+      "severity": "warning",
+      "type":"exec",
+      "update_with": null,
+      "reason": "Could execute vulnerable and untrusted code."
+    },
+    "eval":{
+      "severity": "warning",
+      "type":"exec",
+      "update_with": null,
+      "reason": "Could execute vulnerable and untrusted code."
+    },
+    "tempfile.mktemp":{
+      "severity": "critical",
+      "type":"exec",
+      "update_with": "tempfile.TemporaryFile()",
+      "reason": ". Malicious users that can predict the file name and write to directory containing the temporary file can effectively hijack the temporary file by creating a symlink with the name of the temporary file before the program creates the file itself"
+    },
+    "fastecdsa.curve.brainpoolP160r1": {
+      "severity": "critical",
+      "type": "elliptic curve",
+      "update_with": "fastecdsa.curve.P521",
+      "reason": "Considered to be weak because of length"
+    }
+}
