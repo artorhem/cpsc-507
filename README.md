@@ -1,6 +1,15 @@
-# BugRevelio
+# Revelio
 
-[todo: description]
+Revelio is a tool that statically analyses Python code for known vulnerabilities. The tool provides a IDE plugin for Sublime for highlighting vulnerabilities as well as a command-line interfaces that provides the following features:
+* Detection of vulnerable functions
+* Detection of dependencies with vulnerabilities
+* Automatic replacement of vulnerable function with safe alternatives
+* Automatically running tests
+* Detecting and updating outdated dependencies
+* Downloading and analyzing of GitHub repositories as well as local files
+* Automatically creating pull-requests to GitHub repositories to fix vulnerable functions
+
+Currently, Revelio is just a prototype which was developed as part of a Software Engineering course.
 
 ## Installation
 

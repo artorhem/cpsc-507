@@ -17,7 +17,7 @@ def login():
 
 
 def main():
-    # load configuration
+    # configuration
     config = None
 
     with open("conf.yaml", 'r') as stream:
@@ -33,7 +33,7 @@ def main():
     # define global test URL
     exec('global TEST_%s_URL; TEST_%s_URL = "%s"' % (config.key_upper, config.key_upper, config.url))
 
-    # after successfully logging in load finance data
+    # after successfully logging in get finance data
     finance_data = None
 
     with open(config.finance_data, 'r') as f:

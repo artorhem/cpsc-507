@@ -15,8 +15,9 @@ import sys
 @click.option('--path', help='Path to a local project directory')
 @click.option('--replace', is_flag=True, default=False, help='Automatically replace vulnerabilities')
 @click.option('--push', is_flag=True, default=False, help='Automatically creates pull-request with changes')
-@click.option('--html', help='Create html report in provided file')
-def main(url, path, replace, push, html):
+@click.option('--html', is_flag=True, default=False, help='Automatically update outdated dependencies')
+@click.option('--update', help)
+def main(url, path, replace, push, html, update):
     """
     Start vulnerability analysis using command line tool.
     :param url: URL to a github repository
