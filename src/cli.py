@@ -15,8 +15,8 @@ import sys
 @click.option('--path', help='Path to a local project directory')
 @click.option('--replace', is_flag=True, default=False, help='Automatically replace vulnerabilities')
 @click.option('--push', is_flag=True, default=False, help='Automatically creates pull-request with changes')
-@click.option('--html', is_flag=True, default=False, help='Automatically update outdated dependencies')
-@click.option('--update', help)
+@click.option('--html', help='Create HTML report in provided file')
+@click.option('--update', is_flag=True, default=False, help='Automatically update outdated dependencies')
 def main(url, path, replace, push, html, update):
     """
     Start vulnerability analysis using command line tool.
@@ -87,7 +87,7 @@ def main(url, path, replace, push, html, update):
     test_metrics_before = {}
 
     if len(vulnerable_functions) > 0:
-        run tests
+        # run tests
         pre_tester = TestInfo(local_repo_path)
 
         try:

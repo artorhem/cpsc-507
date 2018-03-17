@@ -31,8 +31,38 @@ class Report:
         doc, tag, text, line = Doc().ttl()
         doc.asis('<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">')
 
-        with open('css/style.css', 'r') as style_file:
-            custom_style = style_file.read().replace('\n', '')
+        # with open('css/style.css', 'r') as style_file:
+        #     custom_style = style_file.read().replace('\n', '')
+
+        custom_style= """.bs-callout {
+  margin: 20px 0;
+  padding: 15px 30px 15px 15px;
+  border-left: 5px solid #eee;
+}
+.bs-callout h4 {
+  margin-top: 0;
+}
+.bs-callout p:last-child {
+  margin-bottom: 0;
+}
+.bs-callout code,
+.bs-callout .highlight {
+  background-color: #fff;
+}
+
+/* Themes for different contexts */
+.bs-callout-danger {
+  background-color: #fcf2f2;
+  border-color: #dFb5b4;
+}
+.bs-callout-warning {
+  background-color: #fefbed;
+  border-color: #f1e7bc;
+}
+.bs-callout-info {
+  background-color: #f0f7fd;
+  border-color: #d0e3f0;
+}"""
 
         line('style', custom_style)
         line('h1', 'Analysis Report')
