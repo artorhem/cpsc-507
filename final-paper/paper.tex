@@ -1,0 +1,103 @@
+\documentclass[sigconf]{acmart}
+
+\usepackage{amssymb}          % some missing math symbols
+\usepackage{amsmath}          % improved math environment
+\usepackage{graphicx}         % use graphics in document
+\PassOptionsToPackage{hyphens}{url}
+\usepackage[autostyle]{csquotes}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{cleveref}         % add context-specific names before reference, e.g., Figure or
+\usepackage{listings}         % illustration of source code snippets
+\usepackage{microtype}        % improved text alignment, letter arrangement etc.
+\usepackage{xspace}           % spacing
+
+% definition of commonly used abbreviations like e.g., i.e., etc.
+\newcommand*{\eg}{e.g.,\@\xspace}
+\newcommand*{\ie}{i.e.,\@\xspace}
+\newcommand*{\cf}{cf.\@\xspace}
+\newcommand*{\etal}{et~al.\@\xspace}
+\newcommand*{\etc}{etc.\@\xspace}
+
+% circled number
+\newcommand{\numbercircled}[1]{\textcircled{\raisebox{-0.9pt}{#1}}}
+
+\begin{document}
+
+\title{Detection and Mitigation of Dependencies with Security Risks}
+
+
+\author{Gleb Naumenko}
+\affiliation{%
+  \institution{University of British Columbia}
+  %\city{Vancouver}
+  %\state{Canada}
+}
+\email{naumenko@cs.ubc.ca}
+
+
+\author{Puneet Mehrotra}
+\affiliation{%
+  \institution{University of British Columbia}
+  %\city{Vancouver}
+  %\state{Canada}
+}
+\email{puneet89@cs.ubc.ca}
+
+
+\author{Anna Scholtz}
+\affiliation{%
+  \institution{University of British Columbia}
+  %\city{Vancouver}
+  %\state{Canada}
+}
+\email{ascholtz@cs.ubc.ca}
+
+
+
+
+
+
+% \begin{abstract}
+% Many code bases rely on outdated dependencies that might pose security risks. We propose to develop a tool that can automatically detect dependencies with security risks, runs a build with updated dependencies, and informs the developer about potential upgrade errors. We plan to use the tool to analyze a range of Github projects in order to answer several research questions. We also aim to do a user study on the usability and usefulness of the proposed solution.
+% \end{abstract}
+
+
+
+\maketitle
+
+\section{Introduction}
+\label{sec:introduction}
+\input{introduction}
+
+\section{Revelio}
+\label{sec:revelio}
+\input{revelio}
+
+\section{Evaluation}
+\label{sec:evaluation}
+\input{evaluation}
+
+
+\section{Discussion}
+\label{sec:discussion}
+\input{discussion}
+
+
+\section{Related Work}
+\label{sec:related-work}
+\input{related-work}
+
+\section{Future Work}
+\label{sec:future-work}
+\input{future-work}
+
+
+\section{Conclusion}
+\label{sec:conclusion}
+\input{conclusion}
+
+\bibliographystyle{abbrv}
+\bibliography{paper}
+
+\end{document}

@@ -3,6 +3,11 @@ proposal/paper.log
 proposal/paper.out
 proposal/paper.blg
 proposal/paper.bbl
+final-paper/paper.aux
+final-paper/paper.log
+final-paper/paper.out
+final-paper/paper.blg
+final-paper/paper.bbl
 *.pyc
 *.swp
 .idea/
