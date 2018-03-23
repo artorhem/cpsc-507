@@ -1,0 +1,181 @@
+Our tool has been designed to meet the previously defined requirements. It statically identifies locations where the developer has used deprecated or unsafe methods in the code and suggests safe alternatives. It runs tests to check whether the code is broken and needs attention and can update outdated dependencies.
+
+We chose Python as the primary programming language for implementing our tool since our focus is on detecting vulnerabilities in Python projects. The reasons for why we chose Python are manifold: First, a huge amount of software is implemented in Python. On GitHub alone around 2.5 million Python projects are hosted~\cite{ghpython}. It is quite likely that many of these projects are used in a context where security is important and potential vulnerabilities might have a large negative impact. Second, various libraries for parsing and analyzing code are already available and can be integrated into our tool. Third, a wide range of known vulnerabilities in Python is already available on various security related websites~\cite{cvedetails}~\cite{openstack}. 
+
+The tool is based on Python 3 and can currently be used as a plugin for Sublime Text~\cite{sublime} or as a standalone command-line tool. It can analyze Python files that are either stored on the local machine or available in a GitHub repository. The output is a report about detected vulnerabilities, outdated dependencies, vulnerable dependencies and executed tests. In the following, we will give a general overview of the tool architecture and detailed descriptions of the most relevant components.
+
+\subsection{Implementation}
+
+
+A general overview of the components Revelio is composed of is shown in ~\Cref{fig:architecture}. Revelio can be started using the command-line or by using our plugin that integrates it into Sublime Text. The command-line interface provides options for analyzing files stored on the local machine as well as GitHub repositories. For working with GitHub repositories it is required to provide the URL to the repository. Revelio will automatically clone the repository into a temporary directory. Once all files are locally available the vulnerability analysis will be executed.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=\linewidth]{"figures/architecture"}
+\caption{Simplified architecture of Revelio}
+\label{fig:architecture}
+\end{figure}
+
+
+\texttt{Vulnerability Analyzer} implements the core functionality. This component detects vulnerable functions as well as vulnerable dependencies and optionally replaces vulnerable functions if replacement suggestions are available. For this, it relies on known vulnerabilities and known vulnerable dependencies that are stored in databases. These databases are currently maintained manually. They contain information about the severity of a vulnerability, the reason for why it is not secure and, optionally, secure replacements as shown in Listing ~\ref{lst:db-entry}. At the time of writing, we identified 21 vulnerable functions\footnote{\url{https://github.com/scholtzan/cpsc-507/blob/master/src/data/crypto.json}}. For detecting vulnerable dependencies, we use safety-db~\cite{safetydb} which provides information about insecure versions of Python dependencies. 
+
+\begin{figure}[!h]
+    \centering
+    \begin{lstlisting}[caption={Entry in the vulnerability database},captionpos=b, label={lst:db-entry}]
+[...]
+"yaml.load":{
+  "severity": "critical",
+  "type":"pickle",
+  "update_with": "yaml.safe_load(___0)",
+  "reason": "Untrusted input can result  
+        in arbitrary code execution."
+},
+[...]
+\end{lstlisting}
+\end{figure}
+
+Once the analysis is done, Revelio can check for and update outdated dependencies. Furthermore, it can automatically execute the projects own tests, if available. This is especially useful to make sure replacing vulnerable functions or updating dependencies does not break the code. However, these steps can also be skipped and are currently only available through the command-line interface. Revelio provides several options for generating different reports containing the vulnerability, update and test results: reports are available as HTML or plain text printed to the command line. When using the Sublime plugin, vulnerabilities will be highlighted inline with additional information. Furthermore, for GitHub repositories, Revelio can automatically create pull-requests which replace vulnerabilities with safe alternatives and provide more security-related information.
+
+\subsubsection{Detecting Vulnerable Functions}
+
+
+Vulnerable functions are uniquely identified using their full name including module and submodule names (cf. Listing ~\ref{lst:db-entry} line 2). However, the naive approach of performing a plain-text search using this identifier to detect vulnerabilities in files does not work in Python. The reason for this is that in order to access code in other modules or external packages, these dependencies need to be imported. Python allows to import specific names of a module, as shown in Listing ~\ref{lst:vulnerable-code} on line 1, and to define aliases for imported modules (cf. ~\ref{lst:vulnerable-code} line 2). Both of these methods do not introduce the module name from which the imports are taken in the local symbol table. Therefore, developers will use the aliases as well as shortened names in their source code making it impossible to match with the identifiers in the database.
+
+\begin{figure}[!h]
+    \centering
+    \begin{lstlisting}[caption={Usage of vulnerable functions in Python},captionpos=b, label={lst:vulnerable-code}]
+from Crypto.Hash import SHA
+from Crypto.Cipher import ARC4 as A
+
+def main():
+    [...]
+    hash1 = hashlib.md5()
+    [...]
+    cipher = A.new('tempkey')
+    h = SHA.new()
+\end{lstlisting}
+\end{figure}
+
+Instead, Revelio performs its analysis on the AST (abstract syntax tree) of the Python code. The first step is to extract all function calls from the Python file to be analyzed. This will not only extract the full names but also the location in the file. Next, all import statements are determined including aliases. These contain the names of the modules and submodules which can be used to correlate which module provides each function. This way the full function name consisting of module and submodules can be determined and in the next step compared to the known vulnerable functions. At the end of this step, Revelio will have a list of vulnerabilities for each analyzed Python file. 
+
+\subsubsection{Replacing vulnerabilities with safe alternatives}
+
+Revelio offers to replace vulnerable functions with safe alternatives. After the vulnerable functions have been detected and their exact locations have been determined, Revelio will iterate through the Python AST and replace these function calls, if safe alternatives are available. These alternatives are again stored in the database and need to be written as valid Python code (cf. Listing ~\ref{lst:db-entry} line 5). It is also possible to define which function parameters should be used in the replacement. For this, parameters are identified by their location in the parameter list and followed by \enquote{\texttt{\_\_\_}}. For example, in line 5 in Listing ~\ref{lst:db-entry}, \texttt{\_\_\_0} indicates that the first parameter should be used in the replacement function as the first parameter. Finally, Revelio will write the modified Python AST back to the file.
+
+\subsubsection{Detecting vulnerable dependencies}
+
+The standard way to handle dependency management in Python is specifying requirements in a \texttt{requirements.txt} file. While it is widely accepted as a best practice, it is scarcely enforced. There is no one tool like Maven\footnote{\url{https://maven.apache.org/}} for Java that handles the many diverse ways in which people handle project dependencies and packaging. This variation and lack of consensus on best practices can make it challenging to detect what dependencies are used and handle the dependency upgrading. 
+
+To tackle this challenge, Revelio will only look at \texttt{import} statements in the code. All packages that are used in the code need to be imported at some point and thus allows retrieving all dependencies used in the code.
+To determine if a project uses vulnerable dependencies, Revelio first extracts all \texttt{import} statements and compares the imported modules to the database containing information about vulnerable dependencies. For each vulnerable dependency, Revelio will return the versions that are insecure as well as a reason for the insecurity. Project maintainers can use this information to inform users about the dependency versions they should avoid.
+
+\subsubsection{Detecting outdated dependencies}
+
+Checking whether dependencies are outdated is done by extracting imports from the AST and then using the package management system pip\footnote{\url{https://pypi.python.org/pypi/pip}} to determine the currently installed version. Next, pip can retrieve all available versions of a module of which the newest will be installed. Revelio will run available tests to check if the update breaks the code. If tests fail that were executed successfully before the update, then Revelio will go back to the old version of the dependency. Currently, it is possible to update all outdated dependencies at once or to incrementally update and check if the code still runs. The latter option, however, might be very time-intensive since executing all tests over and over again can take a significant amount of time.
+
+
+\subsubsection{Testing}
+
+Tests are optionally executed after insecure functions have been replaced with safe alternatives or outdated dependencies have been updated. There are several testing frameworks that exist for the python ecosystem, however, there are clear favorites that exist among the developer community. From a preliminary search on GitHub, we determined that \emph{pytest}\footnote{\url{https://docs.pytest.org/en/latest/index.html}}, \emph{nose}\footnote{\url{http://nose.readthedocs.io/en/latest/}}, and \emph{unittest}\footnote{\url{https://docs.python.org/2/library/unittest.html}} are the most commonly used. Each of these testing frameworks has their own unique ways to organize, discover, and run tests~\cite{nosetests}~\cite{pytests}. While this divergence is something any automated testing environment has to reckon with, it is also understood well enough that tools have evolved to help deal with this challenge.
+
+\emph{Tox}\footnote{\url{https://tox.readthedocs.io/en/latest/}} is a tool that was created with the aim to standardize the testing effort for python projects. Tox has been designed in a way that makes it continuous integration ready, while still being able to support a wide variety of testing practices. It offers great flexibility to developers in specifying how they want their projects to be tested. Tox allows the user to create a config file for the project that allows the developer to specify the package dependencies that must be fulfilled to test the project, the various versions of the python interpreter that the project needs to be tested against, and allows the user to differentially specify tests that must be run against each target. 
+
+Given the popularity of the tox project, it became a natural choice for Revelio. Revelio has a simple strategy for running tests: for a project that has a \texttt{tox.ini} file in the repository, use it as is; for a project that doesn't have one, create one on a best-effort basis by filling in details in a template config file. A sample \texttt{tox.ini} file is as described in Figure: 
+
+\begin{figure}[!h]
+    \centering
+    \begin{lstlisting}[caption={Sample tox.ini file},captionpos=b, label={lst:tox}]
+[tox]
+ignore_errors = True
+envlogdir = {envdir}/log
+ignoreoutcome = True
+envlist = py35, py36
+skip_missing_interpreters = True
+
+[testenv]
+setenv =
+    PYTHONPATH = {toxinidir}:{toxinidir}/
+whitelist_externals = /usr/bin/env
+install_command = /usr/bin/env LANG=C.UTF-8 pip install {opts} {packages}
+commands =
+    py.test --timeout=9 --duration=10 --cov --cov-report= {posargs}
+deps =
+    -r/home/puneet/scratch/home-assistant/requirements-merged.txt
+    -c/home/puneet/scratch/home-assistant/homeassistant/package_constraints.txt
+\end{lstlisting}
+\end{figure}
+
+
+There are several details that need to be considered to fill in the template file:
+\begin{enumerate}
+    \item \textbf{Python interpreters:} A project might support multiple python environments. A project usually specifies the python environments that it is designed for in its \texttt{setup.py} file that is used by distutils to install the project. If this information is not found in the setup.py file, it defaults to using \texttt{['py35','py27','py26','py32','py33','py36']}
+    \item \textbf{Requirements and Constraints File:}  A project may specify several requirements and constraint files that are usually scattered throughout the project hierarchy. The developer might have several reasons for creating multiple requirements files, and they might be used for executing different test suites. The uncertainty in knowing how to use these files poses an interesting challenge while creating the \texttt{tox.ini} file. Revelio merges all requirements and constraint files it discovers in the project hierarchy, and for any inconsistencies in the version numbers for packages, it selects the lower version.
+    \item \textbf{Python path for the project:} This is the root location where the main source code is located in the project hierarchy. It is used because often tests are defined inside some subdirectory and expect the python path to be set accordingly. We currently do not handle the scenario where tests are not defined in the project base directory.
+    \item \textbf{Test Runners:} A test runner is a framework for executing tests for a project. The test runners that Revelio has been tuned for are pytest, nose and unittest. Revelio utilizes the common underlying mechanism that all test runners utilize pytests and nose work by finding tests that subclass unittest. This also presents an interesting property that is utilized by Revelio: pytest and nose can be used interchangeably to run the tests. Given this equivalence, Revelio tries to use pytest to run the tests. If the tests cannot be run, the errors are logged and later shown to the user.  
+\end{enumerate}
+
+If no tests were discovered in the project hierarchy, we flag the same to the user. We believe this is important to do since, given the absence of tests, there is no way to analyze the correctness of fixes provided by Revelio. In this case, we cannot vouch for the validity of the patch and whether the tests will pass on applying it. Our warning to the user serves as a disclaimer to this effect. 
+
+
+\subsection{Demonstration}
+
+\subsubsection{Command-line Interface}
+
+The command-line interface for Revelio is shown in~\Cref{fig:command-line}. In this example Revelio was used to analyze a GitHub repository and to generate an HTML report with the results as shown in~\Cref{fig:html}. The results are also printed out on the command-line. Reports contain information about the location of the vulnerability in the code, the reason for why it might be insecure, a severity level and a suggested alternative. Additionally, information about vulnerable or outdated dependencies is provided and an overview of how many tests successfully executed after safe alternatives and updates were applied. For the example in~\Cref{fig:command-line}, no tests were available and all dependencies were up to date. Also, Revelio could not detect any vulnerable dependencies.
+
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{"figures/command-line"}
+\caption{Revelios command-line interface}
+\label{fig:command-line}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{"figures/html"}
+\caption{Extract of a HTML report created after the analysis}
+\label{fig:html}
+\end{figure}
+
+\subsubsection{Sublime Text Plugin}
+
+The Sublime Text 3 plugin was developed as a part of the Revelio tool. In the current implementation, the plugin has 3 functions: highlighting security vulnerabilities in the code, displaying details related to the selected vulnerability and replacing vulnerable functions with secure alternatives. There are 2 types of highlighting implemented in the plugin. Critical dependencies are highlighted with a red frame (see~\Cref{fig:sublime} line 25), others — with a white frame (see~\Cref{fig:sublime} line 34).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{"figures/sublime"}
+\caption{Sublime Text Plugin}
+\label{fig:sublime}
+\end{figure}
+
+Information related to the vulnerability is shown by hovering over a vulnerability. Displayed details include the vulnerability type, reason, safe alternatives and the severity.
+There are 3 shortcuts introduced to help developers replace vulnerable functions automatically: replace the selected vulnerability, replace all occurrences of the vulnerability in the file
+and replace all vulnerabilities in the file.
+
+\subsection{Limitations}
+
+
+\subsubsection{Python 3 Support}
+
+Currently, Revelio is written in Python 3 and only supports analysis of projects written in Python 3. This might pose a problem for older projects. 
+
+\subsubsection{AST Formatting}
+
+Revelio translates Python code into the corresponding Python AST. All operation, such as replacing vulnerabilities, are executed on the AST. After the analysis, the AST is written back as Python code into the original file. However, for some cases, the formatting of the Python code is different from the original formatting written by the developers because the formatting is automatically generated by the Python \texttt{ast} library which might follow different formatting rules.  
+
+\subsubsection{Manually Maintaining the Database}
+
+The databases for insecure functions and dependencies with vulnerabilities are maintained manually. Vulnerabilities were collected from different websites~\cite{openstack}~\cite{cvedetails}~\cite{securitytracker}~\cite{exploitablepython}. Safety DB is updated once per month but needs to be manually synced with Revelio. Therefore, Revelio might not be able to detect all existing or the most recent vulnerabilities.
+
+\subsubsection{Usage Context}
+
+Revelio does not consider the context in which a vulnerable function is used. Some of the functions pose a security threat only in certain contexts. For example, \texttt{hashlib.md5} would be safe to use for comparing files but not safe in the context of hashing and storing passwords. However, Revelio flags both usages as unsafe and suggests alternatives.
+
+\subsubsection{Test Dependencies}
+
+Revelio can detect and automatically execute available tests in Python. However, often projects have other external dependencies that are not Python dependencies. For example, some projects required \texttt{cmake} to successfully run and execute tests. If not installed, none of the tests can be executed. We ran our pull-request study in a Docker container that had the most commonly used dependencies installed. However, most projects depended on very specific tools that were not installed, thus, most tests could not be executed.  
+
+\subsubsection{IDE Integration}
+
+The Sublime Text plugin currently supports only a subset of the features of the command-line tool. Currently, it is not possible to automatically execute tests or to update outdated dependencies because both require a significant amount of time and would slow down developers. 

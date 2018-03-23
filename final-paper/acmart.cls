@@ -1055,7 +1055,7 @@ Computing Machinery]
   \ifx\acmConference@shortname\@empty
     \gdef\acmConference@shortname{#2}%
   \fi}
-\acmConference[Proposal CPSC 507]{Proposal CPSC 507}{2018}{Vancouver,
+\acmConference[Final Report CPSC 507]{Final Report CPSC 507}{2018}{Vancouver,
   Canada}
 \def\acmBooktitle#1{\gdef\@acmBooktitle{#1}}
 \acmBooktitle{Proceedings of \acmConference@name

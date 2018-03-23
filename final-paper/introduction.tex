@@ -1,0 +1,31 @@
+Security is an important aspect of software design. As stated in recent reports~\cite{kaspersky}, insecure programs still provide significant loss to companies around the world. Credit Union National Association claims that in less than five years, the annual cost of data breaches at the global level will skyrocket to \$2.1 trillion~\cite{juniper}. In addition to the financial aspect, there is another one -- users' private information. In accordance with Vigilante.pw~\cite{vigilantpw}, more than 2100 websites had their databases breached, containing over 2 billion user entries in total.
+
+\emph{Problem} The modern software security paradigm makes it challenging for developers to maintain their programs secure. To do so, developers should be familiar with up-to-date security techniques, vulnerabilities and periodically update their software.
+As is often the case, developers lose awareness of the libraries or functions they use if they do not work on a project for too long~\cite{kula2018developers}. Also, many developers are not aware of the security vulnerabilities in the libraries they use, do not know how to apply fixes or might lack relevant information about vulnerabilities~\cite{cloudpassage}. In general, it is tedious to manually look for updates, and one must remember to do so in the first place. In the absence of active monitoring of the project, its dependencies can stay undetected and outdated for long periods of time, increasing the risk of an attack.
+These problems can be alleviated with tools that notify the developers of the outdated dependencies in their code, suggest alternative safe methods, look for updates and help with the application of fixes.
+
+In this paper we focus on security risks that correlate with the \enquote{Top 4 Common Web Security Vulnerabilities}, recently published by TheMerkle.co~\cite{merkle}: weak cryptographic algorithms (e.g. SHA1), weak cryptographic parameters (e.g. RSA with key length of 1024), code injection, file hijacking and outdated dependencies.
+The first two risks are also important in the context of post-quantum cryptography~\cite{buchmann2008post}.
+
+\emph{Contributions} We propose Revelio, which is a tool helping software developers to find and update vulnerabilities in their programs.
+Revelio should be able to:
+\begin{itemize}
+    \item Statically identify locations where the developer has used deprecated or unsafe methods in the code and replace it with safe alternatives
+    \item Detect and update outdated dependencies
+    \item Dynamically run the project's own tests to check whether an update or the usage of a safe alternative breaks the code
+    \item Update existing projects via GitHub pull requests
+    \item Identify vulnerabilities during the design phase via an IDE plugin
+\end{itemize}
+
+By running Revelio against existing GitHub projects and conducting a user survey, we are trying to answer the following research questions:
+\begin{itemize}
+\item [R1] Can static or dynamic analysis be used to detect vulnerabilities and to verify if the code still runs after an update or modification?
+\item [R2] How many popular projects have dependencies that pose security risks?
+\item [R3] What are the most commonly detected vulnerabilities?
+\item [R4] How many of the suggested changes were developers willing to implement?
+\item [R5] How useful do developers find the IDE plugin while writing code?
+\end{itemize}
+
+% todo:
+
+\emph{Organization} In Section II, we provide background information about security vulnerabilities and propose a set of requirements to a tool to explain the context of this work, motivation and implementation of the prototype are described in Section III. We describe limitations of the prototype in Section IV. Section VI contains empirical results collected by a Pull-request study and User study, which are discussed in Section V. We close the paper with related work (Section Vl), future work (Section VII) and a conclusion (Section Vlll).
