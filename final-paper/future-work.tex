@@ -1,0 +1,17 @@
+\subsection{Accuracy}
+As it was mentioned in Section lV, current implementation of Revelio has a high rate of false positives for certain functions. Recent studies have shown that false positives might dramatically affect user experience and encourage developers to disable tools~\cite{park2016battles}~\cite{muske2015efficient}. As for Revelio, one of the most obvious causes of false positives is the use of weak cryptographic functions in non-cryptographic contexts (for example, MD5 for internal checksums). We see two ways of solving this problem: first, more sophisticated static analysis to identify which warnings can be ignored could be implemented. Second, Revelio could introduce a user interface or an annotation-based notation to developers allowing them to disable warnings in a particular context.
+
+\subsection{Support of Python 2 and Python 3}
+
+Currently, only Python 3 projects can be analyzed. In the future it would be useful to also provide support for Python 2 projects. This would allow to analyze older projects that might have more vulnerabilities than newer projects.
+
+\subsection{Managing Vulnerabilities}
+In the current implementation the vulnerability databases have to be managed manually. For this we extracted known vulnerabilities from different websites. For future versions it might be valuable to automatically extract potential vulnerabilities from websites or other sources. However, solving this problem might be very difficult since vulnerabilities are mostly described using natural language. 
+
+\subsection{Support Other Environments}
+
+While Revelio only supports the analysis of Python projects at the moment, we believe that it would be helpful for other environments, too. However, having support for projects written in other programming languages would require a lot of changes in the current implementation of Revelio. Also executing tests or retrieving dependencies is very specific for each programming language. Nevertheless, many concepts Revelio is based on could be reused to develop a more advanced version for supporting other environments.
+
+\subsection{IDE Improvements}
+
+Our user survey revealed a few improvements users would like to see in the Sublime Text plugin. One is to be able to manually dismiss warnings or to indicate warnings in the scroll bar of Sublime Text for easier navigation. Additionally, it might be useful to be able to execute tests from Sublime Text and to update outdated dependendencies. 

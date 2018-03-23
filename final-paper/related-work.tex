@@ -1,0 +1,16 @@
+There has been a lot of prior work in analyzing developer response to pull-request style notifications to update dependencies in their projects and many empirical studies on awareness and perception of security vulnerabilities. There has also been some prior work that analyzes the impact of dependency management systems and software ecosystems on the ease of managing vulnerable dependencies. 
+
+\subsection{Awareness of Outdated Dependencies and Security Vulnerabilities}
+
+Requires.io\footnote{\url{https://requires.io/}} sends notifications if a Python dependency is expired. It monitors git repositories, however, a free plan is only available for using public repositories. All security advisories are confirmed manually and it does not provide the possibility to update outdated dependencies.
+
+Greenkeeper.io\footnote{\url{https://greenkeeper.io/}} updates \texttt{npm} dependencies of Github JavaScript projects in real-time. It runs tests and notifies when the code breaks. Greenkeeper.io offers several pricing plans however no free version is available.
+
+GitHub provides badges\footnote{\url{https://github.com/badges}} that can be included in the project description and indicate, for example, if the project uses outdated dependencies or fails to compile. While this gives some indication to users and developers, it does not actively try to fix these issues.
+
+Our developed tool offers a command-line interface as well as an IDE integration to analyze locally stored Python projects as well as repositories on Github. Dependencies get updated and the developer will see whether the updated code is broken by running all unit tests. In addition to dynamically checking whether the code breaks our tool also employ static analysis to check where unsafe or deprecated methods are used.
+
+\subsection{Impact of Automated Pull Request Mechanisms}
+
+There have been previous studies that have examined the impact of automated pull requests on the chances that the developer might incorporate suggestions for updating dependencies~\cite{Mirhosseini:2017}. In their work, Mirhosseini et.al analyzed several GitHub projects to observe if the use of badges, automated pull requests and notifications had any change in the upgrade behavior. Their results find that projects that use these automated mechanisms have a higher upgrade turnover. This work is based on an empirical study that does not differentiate between security vulnerabilities in code and out-dated libraries a project uses. 
+By providing updates via pull-requests, Revelio is useful for developers to upgrade their project dependencies as well as keep their code safe and up-to-date.
