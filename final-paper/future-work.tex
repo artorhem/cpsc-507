@@ -1,5 +1,5 @@
 \subsection{Accuracy}
-As it was mentioned in Section lV, current implementation of Revelio has a high rate of false positives for certain functions. Recent studies have shown that false positives might dramatically affect user experience and encourage developers to disable tools~\cite{park2016battles}~\cite{muske2015efficient}. As for Revelio, one of the most obvious causes of false positives is the use of weak cryptographic functions in non-cryptographic contexts (for example, MD5 for internal checksums). We see two ways of solving this problem: first, more sophisticated static analysis to identify which warnings can be ignored could be implemented. Second, Revelio could introduce a user interface or an annotation-based notation to developers allowing them to disable warnings in a particular context.
+As it was mentioned in Section~\ref{sec:evaluation}, the current implementation of Revelio has a high rate of false positives for certain functions. Recent studies have shown that false positives might dramatically affect user experience and encourage developers to disable tools~\cite{park2016battles}~\cite{muske2015efficient}. As for Revelio, one of the most obvious causes of false positives is the use of weak cryptographic functions in non-cryptographic contexts (for example, md5 for internal checksums). We see two ways of solving this problem: first, more sophisticated static analysis to identify which warnings can be ignored could be implemented. Second, Revelio could introduce a user interface or an annotation-based notation to developers allowing them to disable warnings in a particular context.
 
 \subsection{Support of Python 2 and Python 3}
 
@@ -11,6 +11,7 @@ In the current implementation the vulnerability databases have to be managed man
 \subsection{Support Other Environments}
 
 While Revelio only supports the analysis of Python projects at the moment, we believe that it would be helpful for other environments, too. However, having support for projects written in other programming languages would require a lot of changes in the current implementation of Revelio. Also executing tests or retrieving dependencies is very specific for each programming language. Nevertheless, many concepts Revelio is based on could be reused to develop a more advanced version for supporting other environments.
+Additionally, some participants of our user study mentioned that Revelio would be useful as part of a continous integration pipeline.
 
 \subsection{IDE Improvements}
 

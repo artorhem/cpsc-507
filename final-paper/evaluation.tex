@@ -1,8 +1,20 @@
-To answer our research questions and evaluate Revelio we conducted a pull-request study and a user survey.
+To answer our research questions and evaluate Revelio we conducted a pull request study and a user survey. We will first describe the execution of both studies and then present the results which will answer our research questions.
 
-\subsection{Pull-request Study}
+\subsection{Pull Request Study}
 
-To evaluate Revelio we analyzed the top 100 and the top 900-1000 Python projects on GitHub. These projects have a large user base, are actively maintained and security vulnerabilities or stale dependencies will have a negative impact on a large number of people and systems. Our goal was to determine how many of the popular Python projects pose security risks and if there is a difference between very and less popular repositories. Revelio cloned each repository, analyzed them for vulnerable dependencies and functions, replaced vulnerabilities with safe alternatives, ran tests and created a pull-request with the modified files and the report. For the evaluation, we decided to send the pull-request only for critical security issues since the security threat of less severe detected vulnerabilities heavily depends on the usage context.
+To evaluate Revelio we analyzed the top 100 and the top 900-1000 Python projects on GitHub. These projects have a large user base, are actively maintained and security vulnerabilities or stale dependencies will have a negative impact on a large number of people and systems. Our goal was to determine how many of the popular Python projects pose security risks and if there is a difference between very and less popular repositories. Revelio cloned each repository, analyzed them for vulnerable dependencies and functions, replaced vulnerabilities with safe alternatives, ran tests and created a pull request with the modified files and the report. For the evaluation, we decided to send the pull request only for critical security issues since the security threat of less severe detected vulnerabilities heavily depends on the usage context.
+
+\subsection{User Study}
+
+To assess the utility of our sublime plugin and to answer \textbf{R5}, we interviewed 7 developers about their experience in writing secure code in Python. To better understand their experience with the domain, we asked some preliminary questions that probed the participants about their expertise in analyzing code for security flaws. The interview also sought to examine the workflow developers use to update their knowledge about the fast-moving space of security, and the information sources they consult to do the same.
+
+After the initial round of questioning to establish basic facts about the participants, we asked the developers to read a code snippet and try to find vulnerabilities. We had constructed a 50 line code snippet\footnote{\url{https://github.com/scholtzan/cpsc-507/blob/master/userstudy/small-example.py}} for this task and had included 5 unsafe function calls. The participants were provided a simple text editor for this task, and no tooltips were available to help them reason about the validity of their reasoning. The participants were not allowed to consult online resources either. 
+
+Next, we explained to the participants the way Revelio plugin for Sublime Text works and how it indicates the vulnerabilities in their code, and the messages it displays for every vulnerability it finds. We asked the developers about their experience using the plugin and asked them questions about how it fits with their workflows, and what changes might make them adopt it.
+
+\subsection{Results and Discussion}
+
+\subsubsection{R2: How many popular projects have dependencies that pose security risks?}
 
 To answer \textbf{R2}, Table ~\ref{tab:vuln} shows the results of our study. Overall, most of the detected vulnerabilities were less severe. In total, 6 repositories of the top 100 and 8 of the top 900-1000 Python projects had critical vulnerabilities. While the number of vulnerabilities was slightly lower for top 100 projects, the difference is not very significant.
 
@@ -25,7 +37,12 @@ Top 900-1000 & 58 (22) & 24 (8) & 103  \\
 \end{table}
 
 
-Next, we analyzed the most common insecure functions that were used in order to answer \textbf{R3}. The results are shown in Table ~\ref{tab:vulnerabilities}. \texttt{exec} and \texttt{eval} were detected most often. Both functions execute Python code that can be passed as a string parameter. However, this might allow execution of malicious code. \texttt{hashlib.sha1} can also pose a critical security vulnerability when used in the context of password encryption. Through manual inspection, we discovered that this was the case for one project. The other projects use it, for example, to create hashes of files check if they are the same. We deleted the pull-requests to these projects since they pose no security threats in these cases. \texttt{yaml.load}, \texttt{pickle.load} and \texttt{cPickle.load} are used to read, serialize and deserialize text from files. These functions do not provide strong separation of data and code, and thus allow code to be embedded inside the input~\cite{openstack}. However, some of these libraries provide methods such as \texttt{yaml.safe\_load}. 
+\subsubsection{R3: What are the most commonly detected vulnerabilities?}
+
+
+
+
+Next, we analyzed the most common insecure functions that were used in order to answer \textbf{R3}. The results are shown in Table ~\ref{tab:vulnerabilities}. \texttt{exec} and \texttt{eval} were detected most often. Both functions execute Python code that can be passed as a string parameter. However, this might allow execution of malicious code. \texttt{hashlib.sha1} and \texttt{hashlib.md5} can also pose a critical security vulnerability when used in the context of password encryption. Through manual inspection, we discovered that this was the case for one project. The other projects use it, for example, to create hashes of files check if they are the same. We deleted the pull requests to these projects since they pose no security threats in these cases. \texttt{yaml.load}, \texttt{pickle.load} and \texttt{cPickle.load} are used to read, serialize and deserialize text from files. These functions do not provide strong separation of data and code, and thus allow code to be embedded inside the input~\cite{openstack}. However, some of these libraries provide methods such as \texttt{yaml.safe\_load}. 
 
 
 \begin{table}[!h]
@@ -33,7 +50,7 @@ Next, we analyzed the most common insecure functions that were used in order to 
   \centering
   \begin{tabular}{|p{0.2\textwidth}|p{0.08\textwidth}|p{0.12\textwidth}|}
     \hline
- & \#in top 100 & \# in top 900-1000 \\
+ & \#in top 100 & \#in top 900-1000 \\
 \hline
 \hline
 \texttt{exec} (warning) & 21 & 16 \\
@@ -57,7 +74,13 @@ Next, we analyzed the most common insecure functions that were used in order to 
   \label{tab:vulnerabilities}
 \end{table}
 
-Revelio created pull-requests for all repositories with critical vulnerabilities. However, after manual inspection, we deleted six pull-requests. All of these flagged and replaced the usage of \texttt{hashlib.sha1} or \texttt{hashlib.md5}, however, the usage was not in a security critical context, such as a login or storage of passwords. We collected the status of the pull-requests as well as comments after a duration of 10 days. Table ~\ref{tab:pull-requests} gives an overview of the security vulnerabilities in the remaining pull-requests.
+
+\subsubsection{R4: How many of the suggested changes were developers willing to implement?}
+
+
+
+
+Revelio created pull requests for all repositories with critical vulnerabilities. However, after manual inspection, we deleted six pull requests. All of these flagged and replaced the usage of \texttt{hashlib.sha1} or \texttt{hashlib.md5}, however, the usage was not in a security critical context, such as a login or storage of passwords. We collected the status of the pull requests as well as comments after a duration of 10 days. Table ~\ref{tab:pull-requests} gives an overview of the security vulnerabilities in the remaining pull requests.
 
 
 \begin{table}[!h]
@@ -82,38 +105,43 @@ Project & Vulnerabilities & Status after 10 days \\
 \hline
 \url{https://github.com/openai/universe} & \texttt{yaml.load} & Pending \\
 \hline
-\url{https://github.com/bugrevelio/nltk} & \texttt{yaml.load}, \texttt{pickle.load}, \texttt{exec}, \texttt{eval} & 2 thumbs up, sticky issue \\
+\url{https://github.com/nltk/nltk} & \texttt{yaml.load}, \texttt{pickle.load}, \texttt{exec}, \texttt{eval} & 2 thumbs up, sticky issue \\
  \hline
   \end{tabular}
-  \caption{Results of the pull-request study} 
+  \caption{Results of the pull request study} 
   \label{tab:pull-requests}
 \end{table}
 
 
-Two of the analyzed repositories used \texttt{hashlib.md5} as well as \texttt{hashlib.sha1} to hash passwords, however for these projects were no responses to the pull-requests received. Our modified files did not break any tests that were executed after the changes were pushed to GitHub. 
+Two of the analyzed repositories used \texttt{hashlib.md5} as well as \texttt{hashlib.sha1} to hash passwords, however for these projects were no responses to the pull requests received. Our modified files did not break any tests that were executed after the changes were pushed to GitHub. 
 
-For investigating \textbf{R4}, we analyzed the comments and reactions we received on Revelios pull-requests. All of them were positive. Developers of one project even suggested alternatives for \texttt{exec} and \texttt{eval}:
+For investigating \textbf{R4}, we analyzed the comments and reactions we received on Revelios pull requests. All of them were positive. Developers of one project even suggested alternatives for \texttt{exec} and \texttt{eval}:
 \enquote{\textit{Regarding eval(), I agree that there should be a better way to read the data and an alternative would be to use literal\_eval() to evaluate strings}}
 
-Although the projects have between 5 to 231 contributors, not all pull-requests got responses within 10 days. The average time between creating a pull-request to merging was between 2 to 24 days for the eight projects. Since no pull-request was rejected, it is quite possible that it might get merged after the study ended.
+Although the projects have between 5 to 231 contributors, not all pull requests got responses within 10 days. The average time between creating a pull request to merging was between 2 to 24 days for the eight projects. Since no pull request was rejected, it is quite possible that it might get merged after the study ended.
 
-Overall, one pull-request was merged, for another project a sticky issue was created in order to find fixes for security vulnerabilities that Revelio detected but did not have safe alternatives for. Another pull-request was assigned to a reviewer but did not get merged within 10 days. All in all, we think that developers found the automatically created pull-requests quite useful and are not objected to merging them into their code.
+Overall, one pull request was merged, for another project a sticky issue was created in order to find fixes for security vulnerabilities that Revelio detected but did not have safe alternatives for. Another pull request was assigned to a reviewer but did not get merged within 10 days. All in all, we think that developers found the automatically created pull requests quite useful and are not objected to merging them into their code.
 
-\subsection{User Survey}
 
-To assess the utility of our sublime plugin and to answer \textbf{R5}, we interviewed 7 developers about their experience in writing secure code in Python. To better understand their experience with the domain, we asked some preliminary questions that probed the participants about their expertise in analyzing code for security flaws. The interview also sought to examine the workflow developers use to update their knowledge about the fast-moving space of security, and the information sources they consult to do the same.
+\subsubsection{R1: Can static or dynamic analysis be used to detect vulnerabilities and to verify if the code still runs after an update or modification?}
 
-After the initial round of questioning to establish basic facts about the participants, we asked the developers to read a code snippet and try to find vulnerabilities. We had constructed a 50 line code snippet\footnote{\url{https://github.com/scholtzan/cpsc-507/blob/master/userstudy/small-example.py}} for this task and had included 5 unsafe function calls. The participants were provided a simple text editor for this task, and no tooltips were available to help them reason about the validity of their reasoning. The participants were not allowed to consult online resources either. 
+To answer \textbf{R1}, as shown in our prior evaluation, Revelio is able to detect all functions and dependencies that are considered as insecure and stored in the databases using static analysis. However, as mentioned before, some functions like weak cryptographic functions might be safe to use, for example in non-cryptographic contexts. These functions are still flagged as vulnerabilities which results in a relatively high false positive rate for certain vulnerabilities. For instance, in our pull request study, pull requests of six projects out of 14 were removed since they used weak cryptographic functions in safe contexts. Although the false positive rate might be high, we believe that it is still valuable for developers to be aware of potential security issues. 
 
-Next, we explained to the participants the way Revelio plugin for Sublime Text works and how it indicates the vulnerabilities in their code, and the messages it displays for every vulnerability it finds. We asked the developers about their experience using the plugin and asked them questions about how it fits with their workflows, and what changes might make them adopt it.
+Revelio can also dynamically verify whether the code is still running after updating dependencies or replacing vulnerable functions. However, for this projects need to provide tests that conform to the format described in Section~\ref{sec:testing}. Also, tests might fail to run if other required dependencies are not installed. For our study, most tests could not be executed since they relied on other external dependencies that were not installed by default.
 
+
+
+\subsubsection{R5: How useful do developers find the IDE plugin while writing code?}
+
+
+Most participants we interviewed, as shown in Table~\ref{tab:user-study}, either did not care about security vulnerabilities in their code [HG,LC,AJ,FR], or relied on a formal code review process [LP,ND,VK] to become aware of them. The participants who cared less about security were academics and revealed that they cared less because their code was primarily used for research prototypes. The participants did not have a well-defined source of information when it came to checking for new vulnerabilities, and they relied on transparent and non-disruptive library upgrades, or some explicit notification (like a review comment or pull request) to take notice of the defect [FR,ND,VK,LP].  All participants preferred directed comments about specific items to change in code, than generic advice about scanning for vulnerabilities. 
 
 \begin{table*}[!h]
 \small
   \centering
   \begin{tabular}{|p{0.08\textwidth}|p{0.08\textwidth}|p{0.1\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|}
     \hline
-Developer & Age & Job Title & Proficiency in Python & Domain expertise & Number of vulnerabilities identified & Is the tool useful & Usability of the tool & Will you use it? \\
+Developer & Age & Job Title & Proficiency in Python & Domain expertise & Number of vulnerabilities identified & Is the tool useful? & Usability of the tool & Will you use it? \\
 \hline
 \hline
 HG & 24 & Graduate Student & 3 & 2 & 3 & 4 & 5 & 2 \\
@@ -136,12 +164,10 @@ VK* & 28 & Technology Associate, Goldman Sachs & 4 & 2 & 2 & 4 & 5 & 4 \\
 \end{table*}
 
 
-Most participants we interviewed, as show in Table~\ref{tab:user-study}, either did not care about security vulnerabilities in their code [HG,LC,AJ,FR], or relied on a formal code review process [LP,ND,VK] to become aware of them. The participants who cared less about security were academics and revealed that they cared less because their code was primarily used for research prototypes. The participants did not have a well-defined source of information when it came to checking for new vulnerabilities, and they relied on transparent and non-disruptive library upgrades, or some explicit notification (like a review comment or pull request) to take notice of the defect [FR,ND,VK,LP].  All participants preferred directed comments about specific items to change in code, than generic advice about scanning for vulnerabilities. 
-
 The number of vulnerabilities participants identified is mentioned in Table~\ref{tab:user-study}. Depending on their experience with the language, the participants spent varying amounts of time analyzing the code. The most commonly identified vulnerability was the use of md5 hashing to save passwords (all participants other than LC were able to identify this), and none of the participants managed to identify the \texttt{yaml.load} vulnerability. 
 
 All participants liked the Sublime plugin as it helped to confirm or dispel doubts about the code they were inspecting and in general were favorable of the idea to use a static analysis tool to highlight potential security vulnerabilities in code. All participants agreed strongly to the utility of having such a tool available to them either as an IDE plugin or as part of a pre-commit lint checker. 
 
-When asked about potential improvements to the tool, most participants wanted some form of integration with DevOps tools like pre-commit lint checking[ND,FR,LP,AJ,VK]. Another common ask was to have the ability to dismiss warnings and prevent certain kinds of warnings from being flagged [HG,LC,AJ]. Some developers had concerns about the effort involved in updating the vulnerability list [FR,AJ], and indicated the scenario for having a self-updating vulnerability database.
+When asked about potential improvements to the tool, most participants wanted some form of integration with DevOps tools like pre-commit lint checking [ND,FR,LP,AJ,VK]. Another common ask was to have the ability to dismiss warnings and prevent certain kinds of warnings from being flagged [HG,LC,AJ]. Some developers had concerns about the effort involved in updating the vulnerability list [FR,AJ], and indicated the scenario for having a self-updating vulnerability database.
 
 
